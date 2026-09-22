@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs><style>.bg{fill:#f7f7f7}.side{fill:#e3e3e3;stroke:#333;stroke-width:2}.card{fill:#fff;stroke:#555;stroke-width:2}.soft{fill:#efefef;stroke:#777;stroke-width:1.5}.dark{fill:#222}.muted{fill:#666}.white{fill:#fff}text{font-family:"Pretendard","Noto Sans KR",Arial,sans-serif}.h1{font-size:30px;font-weight:700}.h2{font-size:20px;font-weight:700}.body{font-size:16px}.small{font-size:13px}</style>  <style>
+    .bg { fill: #F4F7FA; }
+    .side { fill: #002C5F; stroke: #002C5F; }
+    .card { fill: #FFFFFF; stroke: #D9E4EE; stroke-width: 1.25; }
+    .soft { fill: #F3F7FB; stroke: #DCE6EF; stroke-width: 1; }
+    .dark { fill: #172A3A; }
+    .muted { fill: #697D90; }
+    .white { fill: #FFFFFF; }
+    text { font-family: "Pretendard Variable", "Pretendard", "Noto Sans KR", Arial, sans-serif; }
+    [fill="#333"] { fill: #0075C9; }
+    [fill="#ccc"] { fill: #E6EEF6; }
+    [fill="#ddd"] { fill: #EAF1F6; }
+    [fill="#aaa"] { fill: #C7D7E5; }
+    [fill="#bbb"] { fill: #B8CCDC; }
+    [fill="#e3e3e3"] { fill: #002C5F; }
+    [fill="#e6e6e6"] { fill: #E8F0F7; }
+    [fill="#eee"], [fill="#efefef"], [fill="#ededed"] { fill: #F3F7FB; }
+    [stroke="#333"] { stroke: #0075C9; }
+    [stroke="#444"] { stroke: #0075C9; }
+    [stroke="#555"] { stroke: #7890A5; }
+    [stroke="#666"] { stroke: #00A9CE; }
+    [stroke="#777"], [stroke="#888"] { stroke: #A9BBCB; }
+    [stroke="#aaa"] { stroke: #40678C; }
+    [stroke="#ddd"] { stroke: #DEE7EF; }
+    [stroke-dasharray] { stroke: #00A9CE; }
+    svg > rect[x="28"][y="26"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg > rect[fill="#ccc"][stroke="#333"] { fill: #0B477B; stroke: #1D5E94; }
+    svg > text[x="48"], svg > text[x="78"] { fill: #BED0E0; }
+    svg > text[x="84"] { fill: #FFFFFF; }
+    svg > text[x="48"][font-weight="700"] { fill: #FFFFFF; }
+    svg > circle[cx="50"][cy="840"] { fill: #26A96C; }
+    svg > line[x1="28"][y1="802"] { stroke: #315A82; }
+    .result { fill: #D94B4B; }
+    g[transform="translate(286,124)"] text[x="332"][y="78"] { fill: #168B5B; }
+    g[transform="translate(286,124)"] text[x="642"][y="78"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] polyline { stroke: #0075C9; }
+    g[transform="translate(286,280)"] circle[stroke="#555"] { stroke: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#555"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#777"] { fill: #D68A18; }
+    g[transform="translate(286,280)"] rect[fill="#999"] { fill: #7B61C9; }
+    g[transform="translate(286,280)"] rect[fill="#bbb"] { fill: #56A6B8; }
+    g[transform="translate(286,112)"] rect[x="326"][y="568"] { fill: #FDE7E7; stroke: #D94B4B; }
+    g[transform="translate(286,112)"] text[x="342"][y="592"] { fill: #B42318; }
+    g[transform="translate(1188,112)"] rect[x="22"][y="58"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1188,112)"] text[x="130"][y="130"] { fill: #B42318; }
+    g[transform="translate(286,238)"] text[x="286"][y="68"] { fill: #168B5B; }
+    g[transform="translate(286,238)"] text[x="554"][y="68"] { fill: #D94B4B; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#aaa"] { fill: #FDE7E7; stroke: #F5B8B8; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#ddd"] { fill: #E5F7EE; stroke: #B9E5CE; }
+    g[transform="translate(286,352)"] text[x="1038"] { fill: #B42318; }
+    g[transform="translate(286,352)"] text[x="1037"] { fill: #147A50; }
+    g[transform="translate(1164,142)"] rect[x="22"][y="56"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1164,142)"] text[x="132"][y="126"] { fill: #B42318; }
+    g[transform="translate(286,28)"] rect[x="1026"][y="26"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(286,28)"] text[x="1057"][y="54"] { fill: #B42318; }
+    g[transform="translate(286,652)"] circle[fill="#888"] { fill: #26A96C; }
+    g[transform="translate(286,422)"] rect[fill="#777"] { fill: #00A9CE; }
+    svg[width="430"] > rect[x="0"][y="0"] { fill: #002C5F; stroke: #002C5F; }
+    svg[width="430"] > rect[x="18"][y="17"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg[width="430"] > text[x="68"][y="34"], svg[width="430"] > text[x="68"][y="51"], svg[width="430"] > text[x="391"] { fill: #FFFFFF; }
+    svg[width="430"] > text[x="159"] { fill: #B8CBDC; }
+    svg[width="430"] rect[x="34"][y="490"], svg[width="430"] rect[x="146"][y="852"] { fill: #FDE7E7; stroke: #D94B4B; }
+    svg[width="430"] text[x="45"][y="502"], svg[width="430"] text[x="157"][y="875"] { fill: #B42318; }
+  </style>
+</defs>
+  <rect class="bg" width="1600" height="900"/><rect class="side" x="0" y="0" width="250" height="900"/>
+  <rect x="28" y="26" width="42" height="42" rx="8" fill="#bbb" stroke="#333" stroke-width="2"/><text x="84" y="45" class="h2 dark">Smart Bolt</text><text x="84" y="65" class="small muted">Vision Program</text><text x="48" y="149" class="body muted">▣  대시보드</text><text x="48" y="209" class="body muted">▧  이미지 검사</text><text x="48" y="269" class="body muted">≡  검사 이력</text><rect x="18" y="296" width="214" height="52" rx="8" fill="#ccc" stroke="#333" stroke-width="2"/><text x="48" y="329" class="body dark" font-weight="700">⚙  환경 설정</text>
+  <g transform="translate(286,32)"><text x="0" y="30" class="h1 dark">환경 설정</text><text x="0" y="58" class="body muted">검사 기준과 장치·저장소·서비스 상태를 확인합니다.</text><rect x="1078" y="4" width="200" height="42" rx="8" class="soft"/><text x="1110" y="31" class="body dark">공용 기준은 조회 전용</text></g>
+  <g transform="translate(286,112)">
+    <rect x="0" y="0" width="618" height="288" rx="12" class="card"/><text x="22" y="36" class="h2 dark">검사 기준</text><text x="500" y="34" class="small muted">조회 전용</text>
+    <text x="22" y="75" class="small muted">필수 부품</text><text x="220" y="75" class="body dark">볼트 · 와셔 · 너트</text><line x1="22" y1="92" x2="596" y2="92" stroke="#ddd"/><text x="22" y="122" class="small muted">정상 조립 순서</text><text x="220" y="122" class="body dark">볼트 → 와셔 → 너트</text><line x1="22" y1="139" x2="596" y2="139" stroke="#ddd"/><text x="22" y="169" class="small muted">간격 허용 범위</text><text x="220" y="169" class="body dark">미설정</text><line x1="22" y1="186" x2="596" y2="186" stroke="#ddd"/><text x="22" y="216" class="small muted">노출 길이 허용 범위</text><text x="220" y="216" class="body dark">미설정</text><line x1="22" y1="233" x2="596" y2="233" stroke="#ddd"/><text x="22" y="263" class="small muted">너트 기울기 허용값</text><text x="220" y="263" class="body dark">미설정</text>
+
+    <rect x="640" y="0" width="638" height="288" rx="12" class="card"/><text x="662" y="36" class="h2 dark">카메라 설정</text><text x="662" y="68" class="small muted">이 브라우저에만 적용됩니다.</text>
+    <text x="662" y="108" class="small muted">카메라 장치</text><rect x="662" y="120" width="594" height="42" rx="7" class="soft"/><text x="680" y="147" class="body dark">Integrated Camera ▾</text><text x="662" y="194" class="small muted">촬영 해상도</text><rect x="662" y="206" width="254" height="42" rx="7" class="soft"/><text x="680" y="233" class="body dark">1920 × 1080 ▾</text><text x="950" y="194" class="small muted">카메라 권한</text><rect x="950" y="206" width="188" height="42" rx="7" class="soft"/><text x="972" y="233" class="body dark">허용됨</text><rect x="1148" y="206" width="108" height="42" rx="7" fill="#333"/><text x="1172" y="233" class="body white">테스트</text>
+  </g>
+  <g transform="translate(286,422)">
+    <rect x="0" y="0" width="618" height="208" rx="12" class="card"/><text x="22" y="36" class="h2 dark">파일 및 배치</text><text x="22" y="76" class="small muted">지원 형식</text><text x="212" y="76" class="body dark">JPG · JPEG · PNG</text><line x1="22" y1="92" x2="596" y2="92" stroke="#ddd"/><text x="22" y="122" class="small muted">입력 방식</text><text x="212" y="122" class="body dark">다중 이미지 · 폴더 · ZIP</text><line x1="22" y1="138" x2="596" y2="138" stroke="#ddd"/><text x="22" y="168" class="small muted">배치 처리</text><text x="212" y="168" class="body dark">업로드 후 전체 자동 검사</text>
+    <rect x="640" y="0" width="638" height="208" rx="12" class="card"/><text x="662" y="36" class="h2 dark">저장소</text><text x="662" y="76" class="small muted">보관 정책</text><text x="836" y="76" class="body dark">사용자가 삭제할 때까지</text><line x1="662" y1="92" x2="1256" y2="92" stroke="#ddd"/><text x="662" y="122" class="small muted">저장 이미지</text><text x="836" y="122" class="body dark">2,496개</text><text x="1032" y="122" class="small muted">사용량</text><text x="1120" y="122" class="body dark">4.8 GB</text><rect x="662" y="151" width="594" height="14" rx="7" fill="#ddd"/><rect x="662" y="151" width="190" height="14" rx="7" fill="#777"/><text x="662" y="191" class="small muted">삭제는 검사 이력 화면에서 수행합니다.</text>
+  </g>
+  <g transform="translate(286,652)">
+    <rect x="0" y="0" width="1278" height="208" rx="12" class="card"/><text x="22" y="36" class="h2 dark">시스템 정보</text>
+    <rect x="22" y="58" width="286" height="112" rx="8" class="soft"/><circle cx="48" cy="87" r="8" fill="#888"/><text x="66" y="92" class="body dark" font-weight="700">Spring Boot</text><text x="40" y="125" class="small muted">연결 상태</text><text x="216" y="125" class="small dark">정상</text><text x="40" y="151" class="small muted">API 버전</text><text x="216" y="151" class="small dark">v1</text>
+    <rect x="326" y="58" width="286" height="112" rx="8" class="soft"/><circle cx="352" cy="87" r="8" fill="#888"/><text x="370" y="92" class="body dark" font-weight="700">Vision Service</text><text x="344" y="125" class="small muted">연결 상태</text><text x="520" y="125" class="small dark">정상</text><text x="344" y="151" class="small muted">모델</text><text x="446" y="151" class="small dark">bolt-seg-v1.0</text>
+    <rect x="630" y="58" width="286" height="112" rx="8" class="soft"/><circle cx="656" cy="87" r="8" fill="#888"/><text x="674" y="92" class="body dark" font-weight="700">MySQL</text><text x="648" y="125" class="small muted">연결 상태</text><text x="824" y="125" class="small dark">정상</text><text x="648" y="151" class="small muted">버전</text><text x="824" y="151" class="small dark">8.0</text>
+    <rect x="934" y="58" width="322" height="112" rx="8" class="soft"/><text x="954" y="92" class="body dark" font-weight="700">프로그램 정보</text><text x="954" y="125" class="small muted">Smart Bolt Vision Program</text><text x="954" y="151" class="small muted">UI 설계 버전 v0.1</text>
+  </g>
+  <text x="1390" y="884" class="small muted">COLOR MOCKUP 06 · v1.0</text>
+</svg>
