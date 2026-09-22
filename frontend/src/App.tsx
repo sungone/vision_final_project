@@ -6,6 +6,8 @@ import {
 } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout'
 import DashboardPage from './pages/DashboardPage'
+import HistoryPage from './pages/HistoryPage'
+import InspectionDetailPage from './pages/InspectionDetailPage'
 import InspectionPage from './pages/InspectionPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 
@@ -16,7 +18,9 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route
             index
-            element={<Navigate to="/dashboard" replace />}
+            element={
+              <Navigate to="/dashboard" replace />
+            }
           />
 
           <Route
@@ -31,12 +35,12 @@ export default function App() {
 
           <Route
             path="/history"
-            element={
-              <PlaceholderPage
-                title="검사 이력"
-                description="저장된 검사 결과를 조회하고 관리합니다."
-              />
-            }
+            element={<HistoryPage />}
+          />
+
+          <Route
+            path="/history/:inspectionId"
+            element={<InspectionDetailPage />}
           />
 
           <Route
@@ -51,7 +55,9 @@ export default function App() {
 
           <Route
             path="*"
-            element={<Navigate to="/dashboard" replace />}
+            element={
+              <Navigate to="/dashboard" replace />
+            }
           />
         </Route>
       </Routes>
