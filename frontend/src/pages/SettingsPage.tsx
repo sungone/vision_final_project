@@ -16,6 +16,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useLocalStorageState } from '../hooks/useLocalStorageState'
 
 type CameraPermission =
   | 'UNKNOWN'
@@ -32,7 +33,10 @@ export default function SettingsPage() {
     useState<MediaDeviceInfo[]>([])
 
   const [selectedCameraId, setSelectedCameraId] =
-    useState('')
+  useLocalStorageState(
+    'smart-bolt-camera-device',
+    '',
+  )
 
   const [cameraPermission, setCameraPermission] =
     useState<CameraPermission>('UNKNOWN')

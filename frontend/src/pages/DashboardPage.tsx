@@ -1,5 +1,6 @@
 import { ArrowRight, ScanLine } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useLocalStorageState } from '../hooks/useLocalStorageState'
 
 type RangeHours = 1 | 3 | 5
 
@@ -28,7 +29,10 @@ const recentDefects = [
 
 export default function DashboardPage() {
   const [rangeHours, setRangeHours] =
-    useState<RangeHours>(5)
+    useLocalStorageState<RangeHours>(
+      'smart-bolt-dashboard-range',
+      5,
+  )
 
   const timeData = useMemo(
     () => createTimeData(rangeHours),

@@ -1,21 +1,21 @@
 import {
   AlertCircle,
-  Camera,
   ChevronLeft,
   ChevronRight,
   FileImage,
   LoaderCircle,
   ScanLine,
   Trash2,
-  Upload,
 } from 'lucide-react'
 import {
-  type ChangeEvent,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
+import FileImportControls, {
+  type FileImportControlsHandle,
+} from '../components/FileImportControls'
 import {
   inspectImage,
   resolveResultImageUrl,
@@ -47,11 +47,8 @@ export default function InspectionPage() {
   const [items, setItems] = useState<InspectionItem[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [uploadError, setUploadError] = useState('')
-
-  const uploadInputRef = useRef<HTMLInputElement>(null)
-  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const fileImportRef = useRef<FileImportControlsHandle>(null)
   const previewUrlsRef = useRef<string[]>([])
-
   const selectedItem = items[selectedIndex]
 
   useEffect(() => {
@@ -66,67 +63,83 @@ export default function InspectionPage() {
     return getFinalResult(selectedItem?.response)
   }, [selectedItem])
 
-  function handleFileChange(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const files = Array.from(event.target.files ?? [])
-
-    addFiles(files)
-    event.target.value = ''
-  }
-
   function addFiles(files: File[]) {
-    setUploadError('')
+  const errors: string[] = []
+  const validFiles: File[] = []
 
-    const validFiles: File[] = []
-    const errors: string[] = []
-
-    files.forEach((file) => {
-      if (!SUPPORTED_TYPES.includes(file.type)) {
-        errors.push(`${file.name}: 지원하지 않는 형식`)
-        return
-      }
-
-      if (file.size > MAX_FILE_SIZE) {
-        errors.push(`${file.name}: 10MB 초과`)
-        return
-      }
-
-      validFiles.push(file)
-    })
-
-    if (errors.length > 0) {
-      setUploadError(errors.join(' / '))
-    }
-
-    if (validFiles.length === 0) {
+  files.forEach((file) => {
+    if (!SUPPORTED_TYPES.includes(file.type)) {
+      errors.push(
+        `${file.name}: 지원하지 않는 형식`,
+      )
       return
     }
 
-    const newItems: InspectionItem[] = validFiles.map(
-      (file) => {
-        const previewUrl = URL.createObjectURL(file)
-
-        previewUrlsRef.current.push(previewUrl)
-
-        return {
-          id: crypto.randomUUID(),
-          file,
-          previewUrl,
-          state: 'READY',
-        }
-      },
-    )
-
-    setItems((currentItems) => [
-      ...currentItems,
-      ...newItems,
-    ])
-
-    if (items.length === 0) {
-      setSelectedIndex(0)
+    if (file.size > MAX_FILE_SIZE) {
+      errors.push(`${file.name}: 10MB 초과`)
+      return
     }
+
+    validFiles.push(file)
+  })
+
+  const existingKeys = new Set(
+    items.map((item) =>
+      createFileKey(item.file),
+    ),
+  )
+
+  const uniqueFiles: File[] = []
+  let duplicateCount = 0
+
+  validFiles.forEach((file) => {
+    const fileKey = createFileKey(file)
+
+    if (existingKeys.has(fileKey)) {
+      duplicateCount += 1
+      return
+    }
+
+    existingKeys.add(fileKey)
+    uniqueFiles.push(file)
+  })
+
+  if (duplicateCount > 0) {
+    errors.push(
+      `${duplicateCount}개의 중복 파일을 제외했습니다.`,
+    )
   }
+
+  setUploadError(errors.join(' / '))
+
+  if (uniqueFiles.length === 0) {
+    return
+  }
+
+  const newItems: InspectionItem[] =
+    uniqueFiles.map((file) => {
+      const previewUrl =
+        URL.createObjectURL(file)
+
+      previewUrlsRef.current.push(previewUrl)
+
+      return {
+        id: crypto.randomUUID(),
+        file,
+        previewUrl,
+        state: 'READY',
+      }
+    })
+
+  setItems((currentItems) => [
+    ...currentItems,
+    ...newItems,
+  ])
+
+  if (items.length === 0) {
+    setSelectedIndex(0)
+  }
+}
 
   async function handleInspection() {
     if (
@@ -212,6 +225,33 @@ export default function InspectionPage() {
     )
   }
 
+  function clearAllItems() {
+      if (items.length === 0) {
+        return
+      }
+
+      const confirmed = window.confirm(
+        `선택한 이미지 ${items.length}개를 모두 삭제하시겠습니까?`,
+      )
+
+      if (!confirmed) {
+        return
+      }
+
+      items.forEach((item) => {
+        URL.revokeObjectURL(item.previewUrl)
+        previewUrlsRef.current =
+        previewUrlsRef.current.filter(
+          (url) => url !== selectedItem.previewUrl,
+        )
+      })
+
+      previewUrlsRef.current = []
+      setItems([])
+      setSelectedIndex(0)
+      setUploadError('')
+    }
+
   const resultImageUrl =
     selectedItem?.response?.resultImageUrl
       ? resolveResultImageUrl(
@@ -221,24 +261,6 @@ export default function InspectionPage() {
 
   return (
     <div className="p-5 sm:p-7 lg:p-9">
-      <input
-        ref={uploadInputRef}
-        type="file"
-        accept=".jpg,.jpeg,.png"
-        multiple
-        hidden
-        onChange={handleFileChange}
-      />
-
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        hidden
-        onChange={handleFileChange}
-      />
-
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div>
           <h1 className="text-3xl font-bold text-[#172a3a]">
@@ -251,29 +273,11 @@ export default function InspectionPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() =>
-              cameraInputRef.current?.click()
-            }
-            className="flex items-center gap-2 rounded-lg border border-[#d9e4ee] bg-white px-5 py-3 font-semibold hover:bg-[#f3f7fb]"
-          >
-            <Camera size={18} />
-            카메라 촬영
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              uploadInputRef.current?.click()
-            }
-            className="flex items-center gap-2 rounded-lg bg-[#0075c9] px-5 py-3 font-semibold text-white hover:bg-[#0065ad]"
-          >
-            <Upload size={18} />
-            파일 업로드
-          </button>
-        </div>
+        <FileImportControls
+          ref={fileImportRef}
+          onFiles={addFiles}
+          onError={setUploadError}
+        />  
       </header>
 
       {uploadError && (
@@ -300,7 +304,7 @@ export default function InspectionPage() {
           {!selectedItem ? (
             <EmptyImageState
               onUpload={() =>
-                uploadInputRef.current?.click()
+                fileImportRef.current?.openImagePicker()
               }
             />
           ) : (
@@ -366,6 +370,7 @@ export default function InspectionPage() {
                 items={items}
                 selectedIndex={selectedIndex}
                 onSelect={setSelectedIndex}
+                onClearAll={clearAllItems}
               />
             </>
           )}
@@ -485,19 +490,31 @@ function FileGrid({
   items,
   selectedIndex,
   onSelect,
-}: {
-  items: InspectionItem[]
-  selectedIndex: number
-  onSelect: (index: number) => void
-}) {
+  onClearAll,
+  }: {
+    items: InspectionItem[]
+    selectedIndex: number
+    onSelect: (index: number) => void
+    onClearAll: () => void
+  }) {
   return (
     <div className="mt-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold">파일 목록</h3>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h3 className="font-bold">파일 목록</h3>
 
-        <span className="text-sm text-[#697d90]">
-          총 {items.length}개
-        </span>
+          <span className="text-sm text-[#697d90]">
+            총 {items.length}개
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClearAll}
+          className="rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
+        >
+          전체 삭제
+        </button>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
@@ -769,4 +786,12 @@ function formatBytes(bytes: number) {
   }
 
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
+function createFileKey(file: File) {
+  return [
+    file.name.toLowerCase(),
+    file.size,
+    file.lastModified,
+  ].join('::')
 }
