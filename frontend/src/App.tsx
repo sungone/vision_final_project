@@ -9,7 +9,7 @@ import DashboardPage from './pages/DashboardPage'
 import HistoryPage from './pages/HistoryPage'
 import InspectionDetailPage from './pages/InspectionDetailPage'
 import InspectionPage from './pages/InspectionPage'
-import PlaceholderPage from './pages/PlaceholderPage'
+import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
   return (
@@ -45,12 +45,7 @@ export default function App() {
 
           <Route
             path="/settings"
-            element={
-              <PlaceholderPage
-                title="환경 설정"
-                description="검사 기준과 시스템 상태를 확인합니다."
-              />
-            }
+            element={<SettingsPage />}
           />
 
           <Route
