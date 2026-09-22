@@ -98,6 +98,8 @@ Default period: Today.
 - `wireframes/01_dashboard-desktop.svg`
 - `wireframes/02_inspection-desktop.svg`
 - `wireframes/03_inspection-mobile.svg`
+- `wireframes/04_history-desktop.svg`
+- `wireframes/05_inspection-detail-desktop.svg`
+- `wireframes/06_settings-desktop.svg`
 
 All numbers and records in the wireframes are illustrative placeholders.
-
