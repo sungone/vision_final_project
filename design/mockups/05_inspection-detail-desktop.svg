@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs><style>.bg{fill:#f7f7f7}.side{fill:#e3e3e3;stroke:#333;stroke-width:2}.card{fill:#fff;stroke:#555;stroke-width:2}.soft{fill:#efefef;stroke:#777;stroke-width:1.5}.dark{fill:#222}.muted{fill:#666}.white{fill:#fff}text{font-family:"Pretendard","Noto Sans KR",Arial,sans-serif}.h1{font-size:30px;font-weight:700}.h2{font-size:20px;font-weight:700}.body{font-size:16px}.small{font-size:13px}.result{font-size:42px;font-weight:800}</style>  <style>
+    .bg { fill: #F4F7FA; }
+    .side { fill: #002C5F; stroke: #002C5F; }
+    .card { fill: #FFFFFF; stroke: #D9E4EE; stroke-width: 1.25; }
+    .soft { fill: #F3F7FB; stroke: #DCE6EF; stroke-width: 1; }
+    .dark { fill: #172A3A; }
+    .muted { fill: #697D90; }
+    .white { fill: #FFFFFF; }
+    text { font-family: "Pretendard Variable", "Pretendard", "Noto Sans KR", Arial, sans-serif; }
+    [fill="#333"] { fill: #0075C9; }
+    [fill="#ccc"] { fill: #E6EEF6; }
+    [fill="#ddd"] { fill: #EAF1F6; }
+    [fill="#aaa"] { fill: #C7D7E5; }
+    [fill="#bbb"] { fill: #B8CCDC; }
+    [fill="#e3e3e3"] { fill: #002C5F; }
+    [fill="#e6e6e6"] { fill: #E8F0F7; }
+    [fill="#eee"], [fill="#efefef"], [fill="#ededed"] { fill: #F3F7FB; }
+    [stroke="#333"] { stroke: #0075C9; }
+    [stroke="#444"] { stroke: #0075C9; }
+    [stroke="#555"] { stroke: #7890A5; }
+    [stroke="#666"] { stroke: #00A9CE; }
+    [stroke="#777"], [stroke="#888"] { stroke: #A9BBCB; }
+    [stroke="#aaa"] { stroke: #40678C; }
+    [stroke="#ddd"] { stroke: #DEE7EF; }
+    [stroke-dasharray] { stroke: #00A9CE; }
+    svg > rect[x="28"][y="26"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg > rect[fill="#ccc"][stroke="#333"] { fill: #0B477B; stroke: #1D5E94; }
+    svg > text[x="48"], svg > text[x="78"] { fill: #BED0E0; }
+    svg > text[x="84"] { fill: #FFFFFF; }
+    svg > text[x="48"][font-weight="700"] { fill: #FFFFFF; }
+    svg > circle[cx="50"][cy="840"] { fill: #26A96C; }
+    svg > line[x1="28"][y1="802"] { stroke: #315A82; }
+    .result { fill: #D94B4B; }
+    g[transform="translate(286,124)"] text[x="332"][y="78"] { fill: #168B5B; }
+    g[transform="translate(286,124)"] text[x="642"][y="78"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] polyline { stroke: #0075C9; }
+    g[transform="translate(286,280)"] circle[stroke="#555"] { stroke: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#555"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#777"] { fill: #D68A18; }
+    g[transform="translate(286,280)"] rect[fill="#999"] { fill: #7B61C9; }
+    g[transform="translate(286,280)"] rect[fill="#bbb"] { fill: #56A6B8; }
+    g[transform="translate(286,112)"] rect[x="326"][y="568"] { fill: #FDE7E7; stroke: #D94B4B; }
+    g[transform="translate(286,112)"] text[x="342"][y="592"] { fill: #B42318; }
+    g[transform="translate(1188,112)"] rect[x="22"][y="58"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1188,112)"] text[x="130"][y="130"] { fill: #B42318; }
+    g[transform="translate(286,238)"] text[x="286"][y="68"] { fill: #168B5B; }
+    g[transform="translate(286,238)"] text[x="554"][y="68"] { fill: #D94B4B; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#aaa"] { fill: #FDE7E7; stroke: #F5B8B8; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#ddd"] { fill: #E5F7EE; stroke: #B9E5CE; }
+    g[transform="translate(286,352)"] text[x="1038"] { fill: #B42318; }
+    g[transform="translate(286,352)"] text[x="1037"] { fill: #147A50; }
+    g[transform="translate(1164,142)"] rect[x="22"][y="56"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1164,142)"] text[x="132"][y="126"] { fill: #B42318; }
+    g[transform="translate(286,28)"] rect[x="1026"][y="26"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(286,28)"] text[x="1057"][y="54"] { fill: #B42318; }
+    g[transform="translate(286,652)"] circle[fill="#888"] { fill: #26A96C; }
+    g[transform="translate(286,422)"] rect[fill="#777"] { fill: #00A9CE; }
+    svg[width="430"] > rect[x="0"][y="0"] { fill: #002C5F; stroke: #002C5F; }
+    svg[width="430"] > rect[x="18"][y="17"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg[width="430"] > text[x="68"][y="34"], svg[width="430"] > text[x="68"][y="51"], svg[width="430"] > text[x="391"] { fill: #FFFFFF; }
+    svg[width="430"] > text[x="159"] { fill: #B8CBDC; }
+    svg[width="430"] rect[x="34"][y="490"], svg[width="430"] rect[x="146"][y="852"] { fill: #FDE7E7; stroke: #D94B4B; }
+    svg[width="430"] text[x="45"][y="502"], svg[width="430"] text[x="157"][y="875"] { fill: #B42318; }
+  </style>
+</defs>
+  <rect class="bg" width="1600" height="900"/><rect class="side" x="0" y="0" width="250" height="900"/>
+  <rect x="28" y="26" width="42" height="42" rx="8" fill="#bbb" stroke="#333" stroke-width="2"/><text x="84" y="45" class="h2 dark">Smart Bolt</text><text x="84" y="65" class="small muted">Vision Program</text>
+  <text x="48" y="149" class="body muted">▣  대시보드</text><text x="48" y="209" class="body muted">▧  이미지 검사</text><rect x="18" y="236" width="214" height="52" rx="8" fill="#ccc" stroke="#333" stroke-width="2"/><text x="48" y="269" class="body dark" font-weight="700">≡  검사 이력</text><text x="48" y="331" class="body muted">⚙  환경 설정</text>
+  <g transform="translate(286,28)">
+    <text x="0" y="22" class="small muted">검사 이력  /  #001248</text><text x="0" y="64" class="h1 dark">검사 상세</text><text x="0" y="90" class="body muted">IMG_0142.jpg · 2026-09-22 10:42:16</text>
+    <rect x="880" y="26" width="132" height="44" rx="8" class="card"/><text x="908" y="54" class="body dark">결과 저장</text><rect x="1026" y="26" width="112" height="44" rx="8" class="card"/><text x="1057" y="54" class="body dark">삭제</text><rect x="1152" y="26" width="126" height="44" rx="8" fill="#333"/><text x="1182" y="54" class="body white">목록으로</text>
+  </g>
+  <g transform="translate(286,142)">
+    <rect x="0" y="0" width="856" height="478" rx="12" class="card"/><text x="22" y="36" class="h2 dark">이미지 비교</text>
+    <rect x="22" y="56" width="396" height="354" rx="8" class="soft"/><text x="40" y="84" class="body dark" font-weight="700">원본</text><rect x="62" y="110" width="316" height="244" rx="6" fill="#ddd" stroke="#888"/><line x1="104" y1="232" x2="336" y2="232" stroke="#555" stroke-width="28"/><circle cx="150" cy="232" r="50" fill="#bbb" stroke="#555" stroke-width="3"/><rect x="240" y="190" width="70" height="84" fill="#aaa" stroke="#555" stroke-width="3"/>
+    <rect x="438" y="56" width="396" height="354" rx="8" class="soft"/><text x="456" y="84" class="body dark" font-weight="700">분석 결과</text><rect x="478" y="110" width="316" height="244" rx="6" fill="#ddd" stroke="#888"/><line x1="520" y1="232" x2="752" y2="232" stroke="#555" stroke-width="28"/><circle cx="566" cy="232" r="50" fill="#bbb" stroke="#555" stroke-width="3"/><rect x="656" y="190" width="70" height="84" fill="#aaa" stroke="#555" stroke-width="3"/><rect x="510" y="168" width="250" height="126" fill="none" stroke="#333" stroke-width="4" stroke-dasharray="9 6"/><line x1="566" y1="232" x2="727" y2="232" stroke="#333" stroke-width="3"/><text x="618" y="219" class="small dark">측정축</text>
+    <rect x="22" y="426" width="38" height="34" rx="6" class="soft"/><text x="36" y="449" class="body dark">‹</text><text x="78" y="449" class="small muted">이전 검사 #001247</text><text x="674" y="449" class="small muted">다음 검사 #001249</text><rect x="796" y="426" width="38" height="34" rx="6" class="soft"/><text x="810" y="449" class="body dark">›</text>
+  </g>
+  <g transform="translate(1164,142)">
+    <rect x="0" y="0" width="400" height="478" rx="12" class="card"/><text x="22" y="36" class="h2 dark">판정 요약</text><rect x="22" y="56" width="356" height="100" rx="9" class="soft"/><text x="40" y="83" class="small muted">최종 판정</text><text x="40" y="133" class="result dark">NG</text><text x="132" y="126" class="body dark" font-weight="700">와셔 누락</text>
+    <text x="22" y="195" class="h2 dark">검사 항목</text><text x="30" y="230" class="body dark">볼트</text><text x="302" y="230" class="body dark" font-weight="700">감지됨</text><line x1="22" y1="243" x2="378" y2="243" stroke="#ddd"/><text x="30" y="273" class="body dark">와셔</text><text x="318" y="273" class="body dark" font-weight="700">누락</text><line x1="22" y1="286" x2="378" y2="286" stroke="#ddd"/><text x="30" y="316" class="body dark">너트</text><text x="302" y="316" class="body dark" font-weight="700">감지됨</text><line x1="22" y1="329" x2="378" y2="329" stroke="#ddd"/><text x="30" y="359" class="body dark">조립 순서</text><text x="286" y="359" class="body dark" font-weight="700">확인 불가</text>
+    <text x="22" y="407" class="h2 dark">불량 사유</text><rect x="22" y="424" width="356" height="36" rx="7" class="soft"/><text x="37" y="447" class="small dark">와셔 객체가 기준 신뢰도 이상으로 검출되지 않음</text>
+  </g>
+  <g transform="translate(286,644)">
+    <rect x="0" y="0" width="606" height="216" rx="12" class="card"/><text x="22" y="36" class="h2 dark">측정값</text><rect x="22" y="58" width="176" height="72" rx="8" class="soft"/><text x="38" y="84" class="small muted">와셔-너트 간격</text><text x="38" y="114" class="h2 dark">측정 불가</text><rect x="214" y="58" width="176" height="72" rx="8" class="soft"/><text x="230" y="84" class="small muted">나사산 노출 길이</text><text x="230" y="114" class="h2 dark">12.8 mm</text><rect x="406" y="58" width="176" height="72" rx="8" class="soft"/><text x="422" y="84" class="small muted">너트 기울기</text><text x="422" y="114" class="h2 dark">1.4°</text><text x="22" y="164" class="small muted">공개 API 기준이 승인되기 전까지 확장 측정값은 목표 UI로만 표시합니다.</text>
+    <rect x="628" y="0" width="650" height="216" rx="12" class="card"/><text x="650" y="36" class="h2 dark">검사 정보</text><text x="650" y="75" class="small muted">검사 번호</text><text x="800" y="75" class="small dark">#001248</text><text x="650" y="105" class="small muted">모델</text><text x="800" y="105" class="small dark">bolt-seg-v1.0</text><text x="650" y="135" class="small muted">원본 이미지</text><text x="800" y="135" class="small dark">IMG_0142.jpg</text><text x="650" y="165" class="small muted">처리 시간</text><text x="800" y="165" class="small dark">1.82초</text><text x="1010" y="75" class="small muted">결과 이미지</text><text x="1130" y="75" class="small dark">RESULT_0142.jpg</text><text x="1010" y="105" class="small muted">조립 순서</text><text x="1130" y="105" class="small dark">DEFECT</text><text x="1010" y="135" class="small muted">체결 상태</text><text x="1130" y="135" class="small dark">NORMAL</text>
+  </g>
+  <text x="1390" y="884" class="small muted">COLOR MOCKUP 05 · v1.0</text>
+</svg>

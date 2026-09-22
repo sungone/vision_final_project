@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="430" height="932" viewBox="0 0 430 932">
+  <defs>
+    <style>
+      .bg { fill: #f7f7f7; }
+      .card { fill: #fff; stroke: #555; stroke-width: 1.5; }
+      .soft { fill: #ededed; stroke: #777; stroke-width: 1.2; }
+      .dark { fill: #222; }
+      .muted { fill: #666; }
+      .white { fill: #fff; }
+      text { font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif; }
+      .h1 { font-size: 22px; font-weight: 700; }
+      .h2 { font-size: 17px; font-weight: 700; }
+      .body { font-size: 14px; }
+      .small { font-size: 11px; }
+      .result { font-size: 34px; font-weight: 800; }
+    </style>
+    <style>
+    .bg { fill: #F4F7FA; }
+    .side { fill: #002C5F; stroke: #002C5F; }
+    .card { fill: #FFFFFF; stroke: #D9E4EE; stroke-width: 1.25; }
+    .soft { fill: #F3F7FB; stroke: #DCE6EF; stroke-width: 1; }
+    .dark { fill: #172A3A; }
+    .muted { fill: #697D90; }
+    .white { fill: #FFFFFF; }
+    text { font-family: "Pretendard Variable", "Pretendard", "Noto Sans KR", Arial, sans-serif; }
+    [fill="#333"] { fill: #0075C9; }
+    [fill="#ccc"] { fill: #E6EEF6; }
+    [fill="#ddd"] { fill: #EAF1F6; }
+    [fill="#aaa"] { fill: #C7D7E5; }
+    [fill="#bbb"] { fill: #B8CCDC; }
+    [fill="#e3e3e3"] { fill: #002C5F; }
+    [fill="#e6e6e6"] { fill: #E8F0F7; }
+    [fill="#eee"], [fill="#efefef"], [fill="#ededed"] { fill: #F3F7FB; }
+    [stroke="#333"] { stroke: #0075C9; }
+    [stroke="#444"] { stroke: #0075C9; }
+    [stroke="#555"] { stroke: #7890A5; }
+    [stroke="#666"] { stroke: #00A9CE; }
+    [stroke="#777"], [stroke="#888"] { stroke: #A9BBCB; }
+    [stroke="#aaa"] { stroke: #40678C; }
+    [stroke="#ddd"] { stroke: #DEE7EF; }
+    [stroke-dasharray] { stroke: #00A9CE; }
+    svg > rect[x="28"][y="26"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg > rect[fill="#ccc"][stroke="#333"] { fill: #0B477B; stroke: #1D5E94; }
+    svg > text[x="48"], svg > text[x="78"] { fill: #BED0E0; }
+    svg > text[x="84"] { fill: #FFFFFF; }
+    svg > text[x="48"][font-weight="700"] { fill: #FFFFFF; }
+    svg > circle[cx="50"][cy="840"] { fill: #26A96C; }
+    svg > line[x1="28"][y1="802"] { stroke: #315A82; }
+    .result { fill: #D94B4B; }
+    g[transform="translate(286,124)"] text[x="332"][y="78"] { fill: #168B5B; }
+    g[transform="translate(286,124)"] text[x="642"][y="78"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] polyline { stroke: #0075C9; }
+    g[transform="translate(286,280)"] circle[stroke="#555"] { stroke: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#555"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#777"] { fill: #D68A18; }
+    g[transform="translate(286,280)"] rect[fill="#999"] { fill: #7B61C9; }
+    g[transform="translate(286,280)"] rect[fill="#bbb"] { fill: #56A6B8; }
+    g[transform="translate(286,112)"] rect[x="326"][y="568"] { fill: #FDE7E7; stroke: #D94B4B; }
+    g[transform="translate(286,112)"] text[x="342"][y="592"] { fill: #B42318; }
+    g[transform="translate(1188,112)"] rect[x="22"][y="58"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1188,112)"] text[x="130"][y="130"] { fill: #B42318; }
+    g[transform="translate(286,238)"] text[x="286"][y="68"] { fill: #168B5B; }
+    g[transform="translate(286,238)"] text[x="554"][y="68"] { fill: #D94B4B; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#aaa"] { fill: #FDE7E7; stroke: #F5B8B8; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#ddd"] { fill: #E5F7EE; stroke: #B9E5CE; }
+    g[transform="translate(286,352)"] text[x="1038"] { fill: #B42318; }
+    g[transform="translate(286,352)"] text[x="1037"] { fill: #147A50; }
+    g[transform="translate(1164,142)"] rect[x="22"][y="56"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1164,142)"] text[x="132"][y="126"] { fill: #B42318; }
+    g[transform="translate(286,28)"] rect[x="1026"][y="26"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(286,28)"] text[x="1057"][y="54"] { fill: #B42318; }
+    g[transform="translate(286,652)"] circle[fill="#888"] { fill: #26A96C; }
+    g[transform="translate(286,422)"] rect[fill="#777"] { fill: #00A9CE; }
+    svg[width="430"] > rect[x="0"][y="0"] { fill: #002C5F; stroke: #002C5F; }
+    svg[width="430"] > rect[x="18"][y="17"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg[width="430"] > text[x="68"][y="34"], svg[width="430"] > text[x="68"][y="51"], svg[width="430"] > text[x="391"] { fill: #FFFFFF; }
+    svg[width="430"] > text[x="159"] { fill: #B8CBDC; }
+    svg[width="430"] rect[x="34"][y="490"], svg[width="430"] rect[x="146"][y="852"] { fill: #FDE7E7; stroke: #D94B4B; }
+    svg[width="430"] text[x="45"][y="502"], svg[width="430"] text[x="157"][y="875"] { fill: #B42318; }
+  </style>
+</defs>
+
+  <rect class="bg" width="430" height="932"/>
+  <rect x="0" y="0" width="430" height="72" fill="#e3e3e3" stroke="#333" stroke-width="1.5"/>
+  <rect x="18" y="17" width="38" height="38" rx="7" fill="#bbb" stroke="#333"/>
+  <text x="68" y="34" class="h2 dark">Smart Bolt</text>
+  <text x="68" y="51" class="small muted">Vision Program</text>
+  <text x="391" y="42" class="h1 dark">☰</text>
+
+  <text x="18" y="110" class="h1 dark">이미지 검사</text>
+  <text x="18" y="133" class="small muted">촬영하거나 이미지를 선택하세요.</text>
+
+  <rect x="18" y="155" width="190" height="52" rx="9" class="card"/>
+  <text x="68" y="187" class="body dark" font-weight="700">카메라 촬영</text>
+  <rect x="222" y="155" width="190" height="52" rx="9" fill="#333"/>
+  <text x="271" y="187" class="body white" font-weight="700">파일 선택</text>
+
+  <rect x="18" y="225" width="394" height="292" rx="12" class="card"/>
+  <text x="34" y="254" class="h2 dark">분석 결과</text>
+  <text x="344" y="253" class="small muted">3 / 24</text>
+  <rect x="34" y="270" width="362" height="210" rx="8" class="soft"/>
+  <line x1="82" y1="377" x2="348" y2="377" stroke="#555" stroke-width="27"/>
+  <circle cx="132" cy="377" r="44" fill="#bbb" stroke="#555" stroke-width="3"/>
+  <rect x="237" y="335" width="70" height="84" fill="#aaa" stroke="#555" stroke-width="3"/>
+  <rect x="72" y="317" width="286" height="121" fill="none" stroke="#333" stroke-width="3" stroke-dasharray="7 5"/>
+  <rect x="34" y="490" width="45" height="18" rx="9" fill="#aaa"/>
+  <text x="45" y="502" class="small dark">NG</text>
+  <text x="90" y="503" class="small dark">IMG_0003.jpg · 와셔 누락</text>
+
+  <rect x="18" y="535" width="394" height="170" rx="12" class="card"/>
+  <text x="34" y="566" class="h2 dark">검사 결과</text>
+  <text x="34" y="610" class="result dark">NG</text>
+  <text x="111" y="600" class="body dark" font-weight="700">와셔 누락</text>
+  <text x="34" y="640" class="small muted">볼트 감지됨  ·  와셔 누락  ·  너트 감지됨</text>
+  <rect x="34" y="658" width="112" height="32" rx="6" class="soft"/>
+  <text x="45" y="678" class="small dark">노출 12.8 mm</text>
+  <rect x="156" y="658" width="105" height="32" rx="6" class="soft"/>
+  <text x="168" y="678" class="small dark">기울기 1.4°</text>
+  <rect x="271" y="658" width="125" height="32" rx="6" fill="#333"/>
+  <text x="295" y="678" class="small white">상세 결과</text>
+
+  <rect x="18" y="723" width="394" height="77" rx="12" class="card"/>
+  <rect x="32" y="739" width="44" height="44" rx="8" class="soft"/>
+  <text x="49" y="768" class="h2 dark">‹</text>
+  <text x="102" y="754" class="body dark" font-weight="700">IMG_0003.jpg</text>
+  <text x="102" y="778" class="small muted">검사 완료 · 3 / 24</text>
+  <rect x="354" y="739" width="44" height="44" rx="8" class="soft"/>
+  <text x="372" y="768" class="h2 dark">›</text>
+
+  <text x="18" y="836" class="h2 dark">파일 바로가기</text>
+  <rect x="18" y="852" width="118" height="36" rx="6" class="soft"/>
+  <text x="29" y="875" class="small dark">0001.jpg  OK</text>
+  <rect x="146" y="852" width="118" height="36" rx="6" fill="#aaa" stroke="#333"/>
+  <text x="157" y="875" class="small dark">0003.jpg  NG</text>
+  <rect x="274" y="852" width="118" height="36" rx="6" class="soft"/>
+  <text x="285" y="875" class="small dark">0004.jpg  OK</text>
+
+  <rect x="0" y="904" width="430" height="28" fill="#e3e3e3"/>
+  <text x="124" y="922" class="small muted">MOBILE COLOR MOCKUP · v1.0</text>
+</svg>

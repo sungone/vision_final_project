@@ -1,6 +1,6 @@
 # Smart Bolt Vision Program - UI/UX Design Brief
 
-> Status: Wireframe phase. This directory contains design-only artifacts. No frontend or backend implementation is included.
+> Status: Color mockup phase. This directory contains design-only artifacts. No frontend or backend implementation is included.
 
 ## Relationship to the current MVP
 
@@ -103,3 +103,14 @@ Default period: Today.
 - `wireframes/06_settings-desktop.svg`
 
 All numbers and records in the wireframes are illustrative placeholders.
+
+## 10. Color mockups
+
+- `mockups/01_dashboard-desktop.svg`
+- `mockups/02_inspection-desktop.svg`
+- `mockups/03_inspection-mobile.svg`
+- `mockups/04_history-desktop.svg`
+- `mockups/05_inspection-detail-desktop.svg`
+- `mockups/06_settings-desktop.svg`
+
+The color mockups preserve the approved wireframe layouts and apply the shared rules in `DESIGN_SYSTEM.md`. All numbers, records, image areas, and service states remain illustrative placeholders.

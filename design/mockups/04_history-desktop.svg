@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .bg{fill:#f7f7f7}.side{fill:#e3e3e3;stroke:#333;stroke-width:2}.card{fill:#fff;stroke:#555;stroke-width:2}.soft{fill:#efefef;stroke:#777;stroke-width:1.5}.dark{fill:#222}.muted{fill:#666}.white{fill:#fff}
+      text{font-family:"Pretendard","Noto Sans KR",Arial,sans-serif}.h1{font-size:30px;font-weight:700}.h2{font-size:20px;font-weight:700}.body{font-size:16px}.small{font-size:13px}.metric{font-size:28px;font-weight:700}
+    </style>
+    <style>
+    .bg { fill: #F4F7FA; }
+    .side { fill: #002C5F; stroke: #002C5F; }
+    .card { fill: #FFFFFF; stroke: #D9E4EE; stroke-width: 1.25; }
+    .soft { fill: #F3F7FB; stroke: #DCE6EF; stroke-width: 1; }
+    .dark { fill: #172A3A; }
+    .muted { fill: #697D90; }
+    .white { fill: #FFFFFF; }
+    text { font-family: "Pretendard Variable", "Pretendard", "Noto Sans KR", Arial, sans-serif; }
+    [fill="#333"] { fill: #0075C9; }
+    [fill="#ccc"] { fill: #E6EEF6; }
+    [fill="#ddd"] { fill: #EAF1F6; }
+    [fill="#aaa"] { fill: #C7D7E5; }
+    [fill="#bbb"] { fill: #B8CCDC; }
+    [fill="#e3e3e3"] { fill: #002C5F; }
+    [fill="#e6e6e6"] { fill: #E8F0F7; }
+    [fill="#eee"], [fill="#efefef"], [fill="#ededed"] { fill: #F3F7FB; }
+    [stroke="#333"] { stroke: #0075C9; }
+    [stroke="#444"] { stroke: #0075C9; }
+    [stroke="#555"] { stroke: #7890A5; }
+    [stroke="#666"] { stroke: #00A9CE; }
+    [stroke="#777"], [stroke="#888"] { stroke: #A9BBCB; }
+    [stroke="#aaa"] { stroke: #40678C; }
+    [stroke="#ddd"] { stroke: #DEE7EF; }
+    [stroke-dasharray] { stroke: #00A9CE; }
+    svg > rect[x="28"][y="26"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg > rect[fill="#ccc"][stroke="#333"] { fill: #0B477B; stroke: #1D5E94; }
+    svg > text[x="48"], svg > text[x="78"] { fill: #BED0E0; }
+    svg > text[x="84"] { fill: #FFFFFF; }
+    svg > text[x="48"][font-weight="700"] { fill: #FFFFFF; }
+    svg > circle[cx="50"][cy="840"] { fill: #26A96C; }
+    svg > line[x1="28"][y1="802"] { stroke: #315A82; }
+    .result { fill: #D94B4B; }
+    g[transform="translate(286,124)"] text[x="332"][y="78"] { fill: #168B5B; }
+    g[transform="translate(286,124)"] text[x="642"][y="78"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] polyline { stroke: #0075C9; }
+    g[transform="translate(286,280)"] circle[stroke="#555"] { stroke: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#555"] { fill: #D94B4B; }
+    g[transform="translate(286,280)"] rect[fill="#777"] { fill: #D68A18; }
+    g[transform="translate(286,280)"] rect[fill="#999"] { fill: #7B61C9; }
+    g[transform="translate(286,280)"] rect[fill="#bbb"] { fill: #56A6B8; }
+    g[transform="translate(286,112)"] rect[x="326"][y="568"] { fill: #FDE7E7; stroke: #D94B4B; }
+    g[transform="translate(286,112)"] text[x="342"][y="592"] { fill: #B42318; }
+    g[transform="translate(1188,112)"] rect[x="22"][y="58"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1188,112)"] text[x="130"][y="130"] { fill: #B42318; }
+    g[transform="translate(286,238)"] text[x="286"][y="68"] { fill: #168B5B; }
+    g[transform="translate(286,238)"] text[x="554"][y="68"] { fill: #D94B4B; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#aaa"] { fill: #FDE7E7; stroke: #F5B8B8; }
+    g[transform="translate(286,352)"] rect[x="1024"][fill="#ddd"] { fill: #E5F7EE; stroke: #B9E5CE; }
+    g[transform="translate(286,352)"] text[x="1038"] { fill: #B42318; }
+    g[transform="translate(286,352)"] text[x="1037"] { fill: #147A50; }
+    g[transform="translate(1164,142)"] rect[x="22"][y="56"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(1164,142)"] text[x="132"][y="126"] { fill: #B42318; }
+    g[transform="translate(286,28)"] rect[x="1026"][y="26"] { fill: #FFF1F1; stroke: #F4C6C6; }
+    g[transform="translate(286,28)"] text[x="1057"][y="54"] { fill: #B42318; }
+    g[transform="translate(286,652)"] circle[fill="#888"] { fill: #26A96C; }
+    g[transform="translate(286,422)"] rect[fill="#777"] { fill: #00A9CE; }
+    svg[width="430"] > rect[x="0"][y="0"] { fill: #002C5F; stroke: #002C5F; }
+    svg[width="430"] > rect[x="18"][y="17"] { fill: #00A9CE; stroke: #72D8EA; }
+    svg[width="430"] > text[x="68"][y="34"], svg[width="430"] > text[x="68"][y="51"], svg[width="430"] > text[x="391"] { fill: #FFFFFF; }
+    svg[width="430"] > text[x="159"] { fill: #B8CBDC; }
+    svg[width="430"] rect[x="34"][y="490"], svg[width="430"] rect[x="146"][y="852"] { fill: #FDE7E7; stroke: #D94B4B; }
+    svg[width="430"] text[x="45"][y="502"], svg[width="430"] text[x="157"][y="875"] { fill: #B42318; }
+  </style>
+</defs>
+  <rect class="bg" width="1600" height="900"/><rect class="side" x="0" y="0" width="250" height="900"/>
+  <rect x="28" y="26" width="42" height="42" rx="8" fill="#bbb" stroke="#333" stroke-width="2"/><text x="84" y="45" class="h2 dark">Smart Bolt</text><text x="84" y="65" class="small muted">Vision Program</text>
+  <text x="48" y="149" class="body muted">▣  대시보드</text><text x="48" y="209" class="body muted">▧  이미지 검사</text>
+  <rect x="18" y="236" width="214" height="52" rx="8" fill="#ccc" stroke="#333" stroke-width="2"/><text x="48" y="269" class="body dark" font-weight="700">≡  검사 이력</text>
+  <text x="48" y="331" class="body muted">⚙  환경 설정</text><line x1="28" y1="802" x2="222" y2="802" stroke="#aaa"/><circle cx="50" cy="840" r="16" fill="#bbb"/><text x="78" y="836" class="small dark">시스템 상태</text><text x="78" y="855" class="small muted">모든 서비스 정상</text>
+
+  <g transform="translate(286,32)">
+    <text x="0" y="30" class="h1 dark">검사 이력</text><text x="0" y="58" class="body muted">저장된 검사 결과를 조회하고 필요한 기록을 관리합니다.</text>
+    <rect x="1110" y="4" width="168" height="42" rx="8" class="card"/><text x="1142" y="31" class="body dark">CSV 다운로드</text>
+  </g>
+
+  <g transform="translate(286,112)">
+    <rect x="0" y="0" width="1278" height="104" rx="12" class="card"/>
+    <text x="20" y="28" class="small muted">검사 기간</text><rect x="20" y="39" width="202" height="44" rx="7" class="soft"/><text x="37" y="67" class="body dark">2026-09-22  오늘 ▾</text>
+    <text x="242" y="28" class="small muted">판정</text><rect x="242" y="39" width="130" height="44" rx="7" class="soft"/><text x="259" y="67" class="body dark">전체 ▾</text>
+    <text x="392" y="28" class="small muted">불량 유형</text><rect x="392" y="39" width="180" height="44" rx="7" class="soft"/><text x="409" y="67" class="body dark">전체 유형 ▾</text>
+    <text x="592" y="28" class="small muted">파일명</text><rect x="592" y="39" width="450" height="44" rx="7" class="soft"/><text x="610" y="67" class="body muted">파일명을 입력하세요</text>
+    <rect x="1062" y="39" width="94" height="44" rx="7" fill="#333"/><text x="1093" y="67" class="body white">조회</text><text x="1180" y="67" class="body muted">초기화</text>
+  </g>
+
+  <g transform="translate(286,238)">
+    <rect x="0" y="0" width="250" height="92" rx="10" class="card"/><text x="18" y="29" class="small muted">조회 결과</text><text x="18" y="68" class="metric dark">1,248건</text>
+    <rect x="268" y="0" width="250" height="92" rx="10" class="card"/><text x="286" y="29" class="small muted">정상</text><text x="286" y="68" class="metric dark">1,181건</text>
+    <rect x="536" y="0" width="250" height="92" rx="10" class="card"/><text x="554" y="29" class="small muted">불량</text><text x="554" y="68" class="metric dark">67건</text>
+    <rect x="1006" y="25" width="142" height="42" rx="7" class="card"/><text x="1034" y="52" class="body dark">선택 삭제</text><rect x="1160" y="25" width="118" height="42" rx="7" class="soft"/><text x="1183" y="52" class="body dark">25개씩 ▾</text>
+  </g>
+
+  <g transform="translate(286,352)">
+    <rect x="0" y="0" width="1278" height="444" rx="12" class="card"/>
+    <rect x="0" y="0" width="1278" height="54" rx="12" fill="#e6e6e6"/>
+    <rect x="20" y="18" width="18" height="18" fill="#fff" stroke="#555"/><text x="59" y="34" class="small dark">검사 번호</text><text x="168" y="34" class="small dark">검사 시각</text><text x="340" y="34" class="small dark">파일명</text><text x="564" y="34" class="small dark">조립 순서</text><text x="688" y="34" class="small dark">체결 상태</text><text x="810" y="34" class="small dark">노출 길이</text><text x="920" y="34" class="small dark">기울기</text><text x="1024" y="34" class="small dark">최종 판정</text><text x="1160" y="34" class="small dark">관리</text>
+    <g class="small dark">
+      <rect x="20" y="76" width="18" height="18" fill="#fff" stroke="#555"/><text x="59" y="91">#001248</text><text x="168" y="91">2026-09-22 10:42</text><text x="340" y="91">IMG_0142.jpg</text><text x="564" y="91">DEFECT</text><text x="688" y="91">NORMAL</text><text x="810" y="91">12.8 mm</text><text x="920" y="91">1.4°</text><rect x="1024" y="69" width="48" height="28" rx="14" fill="#aaa"/><text x="1038" y="88">NG</text><text x="1160" y="91" font-weight="700">상세 ›</text>
+      <line x1="20" y1="114" x2="1258" y2="114" stroke="#ddd"/>
+      <rect x="20" y="137" width="18" height="18" fill="#fff" stroke="#555"/><text x="59" y="152">#001247</text><text x="168" y="152">2026-09-22 10:40</text><text x="340" y="152">IMG_0141.jpg</text><text x="564" y="152">NORMAL</text><text x="688" y="152">NORMAL</text><text x="810" y="152">12.1 mm</text><text x="920" y="152">0.8°</text><rect x="1024" y="130" width="48" height="28" rx="14" fill="#ddd"/><text x="1037" y="149">OK</text><text x="1160" y="152" font-weight="700">상세 ›</text>
+      <line x1="20" y1="175" x2="1258" y2="175" stroke="#ddd"/>
+      <rect x="20" y="198" width="18" height="18" fill="#fff" stroke="#555"/><text x="59" y="213">#001246</text><text x="168" y="213">2026-09-22 10:38</text><text x="340" y="213">IMG_0140.jpg</text><text x="564" y="213">NORMAL</text><text x="688" y="213">DEFECT</text><text x="810" y="213">16.9 mm</text><text x="920" y="213">4.6°</text><rect x="1024" y="191" width="48" height="28" rx="14" fill="#aaa"/><text x="1038" y="210">NG</text><text x="1160" y="213" font-weight="700">상세 ›</text>
+      <line x1="20" y1="236" x2="1258" y2="236" stroke="#ddd"/>
+      <rect x="20" y="259" width="18" height="18" fill="#fff" stroke="#555"/><text x="59" y="274">#001245</text><text x="168" y="274">2026-09-22 10:36</text><text x="340" y="274">IMG_0139.jpg</text><text x="564" y="274">NORMAL</text><text x="688" y="274">NORMAL</text><text x="810" y="274">11.9 mm</text><text x="920" y="274">1.0°</text><rect x="1024" y="252" width="48" height="28" rx="14" fill="#ddd"/><text x="1037" y="271">OK</text><text x="1160" y="274" font-weight="700">상세 ›</text>
+      <line x1="20" y1="297" x2="1258" y2="297" stroke="#ddd"/>
+      <rect x="20" y="320" width="18" height="18" fill="#fff" stroke="#555"/><text x="59" y="335">#001244</text><text x="168" y="335">2026-09-22 10:34</text><text x="340" y="335">IMG_0138.jpg</text><text x="564" y="335">NORMAL</text><text x="688" y="335">NORMAL</text><text x="810" y="335">12.3 mm</text><text x="920" y="335">0.9°</text><rect x="1024" y="313" width="48" height="28" rx="14" fill="#ddd"/><text x="1037" y="332">OK</text><text x="1160" y="335" font-weight="700">상세 ›</text>
+    </g>
+    <text x="20" y="414" class="small muted">1-25 / 1,248건</text><text x="1098" y="414" class="body muted">‹</text><rect x="1122" y="390" width="34" height="34" rx="6" fill="#ccc"/><text x="1136" y="413" class="small dark">1</text><text x="1176" y="413" class="small muted">2</text><text x="1212" y="413" class="small muted">3</text><text x="1244" y="414" class="body muted">›</text>
+  </g>
+  <text x="1390" y="884" class="small muted">COLOR MOCKUP 04 · v1.0</text>
+</svg>
