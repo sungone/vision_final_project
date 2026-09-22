@@ -1,0 +1,1 @@
+"""YOLO inference adapters."""

@@ -146,3 +146,6 @@ tmp/
 temp/
 *.tmp
 ~$*
+# Local implementation verification/runtime
+.tools/
+storage/inspections/
