@@ -91,9 +91,9 @@ data/test/
 # =========================================================
 # Vision 검사 결과 이미지
 # =========================================================
-images/original/
-images/result/
-images/ng/
+dataset/images/original/
+dataset/images/result/
+dataset/images/ng/
 results/
 outputs/
 
