@@ -91,11 +91,11 @@ data/test/
 # =========================================================
 # Vision 검사 결과 이미지
 # =========================================================
-dataset/images/original/
-dataset/images/result/
-dataset/images/ng/
-results/
-outputs/
+#dataset/images/original/
+#dataset/images/result/
+#dataset/images/ng/
+#results/
+#outputs/
 
 
 # =========================================================
