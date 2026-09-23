@@ -16,6 +16,7 @@ import {
 import FileImportControls, {
   type FileImportControlsHandle,
 } from '../components/FileImportControls'
+import LiveStreamViewer from '../components/LiveStreamViewer'
 import {
   inspectImage,
   resolveResultImageUrl,
@@ -286,6 +287,8 @@ export default function InspectionPage() {
           {uploadError}
         </div>
       )}
+
+      <LiveStreamViewer />
 
       <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_376px]">
         <section className="rounded-xl border border-[#d9e4ee] bg-white p-5">

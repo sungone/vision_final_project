@@ -2,9 +2,7 @@
 
 ## Scope
 
-This MVP provides the runtime foundation for a real-time Bolt/Nut/Washer inspection system. It deliberately does not implement YOLO training or inference, production defect rules, KPI algorithms, a completed React UI, or MES functions.
-
-The current vision processor adds a simple OpenCV overlay and produces mock inspection results. A future processor can replace it without changing camera capture, streaming, event persistence, or REST clients.
+This application runs a trained torchvision Mask R-CNN model for real-time Bolt/Washer/Thread instance segmentation. Production defect rules, physical calibration, PLC integration, and MES functions remain outside the current scope.
 
 ## System flow
 
@@ -14,11 +12,13 @@ flowchart TD
     DEVICE --> CAPTURE[OpenCV VideoCapture\nCamera Capture Worker]
     CAPTURE --> RAW[Latest Raw Frame Buffer]
     RAW --> WORKER[Vision Worker]
-    WORKER --> YOLO[YOLO26 Segmentation\nFuture]
-    YOLO --> RULE[Rule Engine\nFuture]
-    RULE --> VIZ[OpenCV Visualization]
+    WORKER --> MODEL[Mask R-CNN\nLoaded once]
+    MODEL --> POST[Score and Mask Filtering]
+    POST --> STRUCTURED[FrameVisionResult]
+    STRUCTURED --> VIZ[Mask Visualization]
     VIZ --> FRAME[Latest Processed Frame]
-    RULE --> RESULT[Latest Inspection Result]
+    STRUCTURED -. Future .-> RULE[Rule Engine]
+    RULE -. Future .-> RESULT[Inspection Result]
 
     FRAME --> JPEG[JPEG Encoding]
     JPEG --> MJPEG[MJPEG Streaming GET]
@@ -55,7 +55,7 @@ A queue is still appropriate for data that must never be skipped, such as a PLC-
 
 ### Vision worker and processor boundary
 
-The vision worker wakes at `VISION_FPS`, reads the newest raw frame, and passes it to a processor interface. The MVP processor returns:
+The vision worker wakes at `VISION_FPS`, reads the newest raw frame, and passes it to `MaskRCNNVisionProcessor`. The model is reconstructed as `maskrcnn_resnet50_fpn_v2`, loaded once from its state dict, moved to the configured device, and kept in evaluation mode. Inference uses `torch.inference_mode()`.
 
 ```text
 InspectionResult
@@ -75,7 +75,7 @@ Raw frame → processor → rule result → OpenCV overlay → JPEG → MJPEG
 
 Encoded MJPEG bytes are never used as the input to computer-vision processing.
 
-The production processor will call YOLO26 segmentation, pass masks/detections into the Rule Engine, draw contours/masks/KPIs, and return the same contract. A single still frame can validate final component presence and relative placement, but it cannot prove temporal assembly order. Proving real assembly order requires tracked observations across time or an external cycle/PLC signal.
+The structured result contains class, confidence, bounding box, binary mask, largest contour, center, and pixel area for every accepted instance. Bolt and thread/nut masks are blue; washer masks are yellow. The current processor deliberately returns `NOT_EVALUATED` for defect rules. A future Rule Engine consumes `FrameVisionResult` without changing capture or streaming.
 
 ## Independent frame rates
 
@@ -161,5 +161,7 @@ Startup order:
 
 Shutdown reverses ownership: stop workers, wake blocked conditions, join threads with a bounded timeout, release `VideoCapture`, and dispose database resources. Request handlers do not own these long-lived resources.
 
-## Deployment`r`n`r`nThe USB/UVC camera is opened by the Flask backend running directly on the Windows host. Docker Compose is used only for PostgreSQL.
+## Deployment
+
+The USB/UVC or DroidCam virtual camera is opened by the Flask backend running directly on the Windows host. Docker Compose is used only for PostgreSQL.
 

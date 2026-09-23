@@ -13,6 +13,25 @@ NOT_EVALUATED = "NOT_EVALUATED"
 
 
 @dataclass(slots=True)
+class DetectedInstance:
+    class_id: int
+    class_name: str
+    confidence: float
+    bbox: tuple[int, int, int, int]
+    mask: np.ndarray
+    contour: np.ndarray | None
+    center: tuple[float, float]
+    area_px: int
+
+
+@dataclass(slots=True)
+class FrameVisionResult:
+    timestamp: datetime
+    instances: list[DetectedInstance] = field(default_factory=list)
+    inference_time_ms: float = 0.0
+
+
+@dataclass(slots=True)
 class InspectionResult:
     overall_result: str = NORMAL
     missing_component_result: str = NORMAL
@@ -22,6 +41,7 @@ class InspectionResult:
     processed_frame: np.ndarray | None = None
     inspection_time: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     event_key: str | None = None
+    vision_result: FrameVisionResult | None = None
 
     @property
     def is_defect(self) -> bool:
@@ -40,4 +60,3 @@ class InspectionResult:
 
 class VisionProcessor(Protocol):
     def process(self, frame: np.ndarray) -> InspectionResult: ...
-

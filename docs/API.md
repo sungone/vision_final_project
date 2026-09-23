@@ -154,12 +154,17 @@ Provides lightweight operational state for the MVP.
 {
   "cameraConnected": true,
   "visionWorkerRunning": true,
+  "modelLoaded": true,
+  "visionDevice": "cuda",
   "databaseConnected": true,
   "eventState": "NORMAL",
   "lastCapturedAt": "2026-09-22T20:10:32.300+09:00",
   "lastProcessedAt": "2026-09-22T20:10:32.350+09:00",
+  "lastInferenceTimeMs": 92.4,
+  "lastDetectionCount": 4,
   "cameraError": null,
   "visionError": null,
+  "modelError": null,
   "databaseError": null
 }
 ```

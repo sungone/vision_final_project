@@ -5,6 +5,11 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
+export function getVisionStreamUrl(cacheKey?: number) {
+  const url = `${API_BASE_URL}/api/v1/stream`
+  return cacheKey == null ? url : `${url}?v=${cacheKey}`
+}
+
 export async function inspectImage(
   image: File,
 ): Promise<InspectionResponse> {

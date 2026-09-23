@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import threading
 import time
+import logging
 from datetime import datetime, timezone
 from typing import Callable
 
 import cv2
 
 from .frame_buffer import LatestFrameBuffer
+
+
+logger = logging.getLogger(__name__)
 
 
 class CameraCaptureWorker:
@@ -76,6 +80,8 @@ class CameraCaptureWorker:
                 except Exception as exc:  # camera backends expose heterogeneous exceptions
                     self.last_error = str(exc)
                     self.connected = False
+                    if not self._stop.is_set():
+                        logger.warning("camera capture unavailable: %s", exc)
                     if not self._stop.wait(self.reconnect_seconds):
                         continue
                 finally:
@@ -93,4 +99,3 @@ def _camera_source(value: str):
         return int(stripped)
     except ValueError:
         return stripped
-

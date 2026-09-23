@@ -43,6 +43,8 @@ class VisionWorker:
         self._thread: threading.Thread | None = None
         self.running = False
         self.last_processed_at: datetime | None = None
+        self.last_inference_time_ms: float | None = None
+        self.last_detection_count: int | None = None
         self.last_error: str | None = None
 
     def start(self) -> None:
@@ -64,13 +66,13 @@ class VisionWorker:
         next_allowed = 0.0
         try:
             while not self._stop.is_set():
+                wait = next_allowed - time.monotonic()
+                if wait > 0 and self._stop.wait(wait):
+                    break
                 snapshot = self.raw_frames.get(after_version=last_version, timeout=0.5)
                 if snapshot is None:
                     continue
                 last_version = snapshot.version
-                wait = next_allowed - time.monotonic()
-                if wait > 0 and self._stop.wait(wait):
-                    break
                 next_allowed = time.monotonic() + interval
                 try:
                     result = self.processor.process(snapshot.value)
@@ -85,6 +87,8 @@ class VisionWorker:
                     self.encoded_frames.put(encoded.tobytes(), result.inspection_time)
                     self.latest_results.put(result, result.inspection_time)
                     self.last_processed_at = result.inspection_time
+                    self.last_inference_time_ms = result.metrics.get("inferenceTimeMs")
+                    self.last_detection_count = result.metrics.get("detectedInstanceCount")
                     self.last_error = None
                     event = self.event_manager.consume(result)
                     if event is not None:
@@ -94,4 +98,3 @@ class VisionWorker:
                     logger.exception("vision frame processing failed")
         finally:
             self.running = False
-

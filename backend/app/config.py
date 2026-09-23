@@ -25,7 +25,15 @@ def _float(name: str, default: float) -> float:
         return default
 
 
+def _path(name: str, default: Path, relative_to: Path) -> str:
+    configured = Path(os.getenv(name, str(default)))
+    if not configured.is_absolute():
+        configured = relative_to / configured
+    return str(configured.resolve())
+
+
 BASE_DIR = Path(__file__).resolve().parents[1]
+PROJECT_DIR = BASE_DIR.parent
 
 
 class Config:
@@ -50,6 +58,19 @@ class Config:
     VISION_FPS = _float("VISION_FPS", 10.0)
     STREAM_FPS = _float("STREAM_FPS", 10.0)
     JPEG_QUALITY = min(100, max(1, _int("JPEG_QUALITY", 80)))
+    VISION_PROCESSOR = os.getenv("VISION_PROCESSOR", "mask_rcnn").strip().lower()
+    MASK_RCNN_MODEL_PATH = _path(
+        "MASK_RCNN_MODEL_PATH", PROJECT_DIR / "output" / "mask_rcnn" / "mask_rcnn_state_dict.pt", BASE_DIR
+    )
+    MASK_RCNN_METADATA_PATH = _path(
+        "MASK_RCNN_METADATA_PATH", PROJECT_DIR / "output" / "mask_rcnn" / "model_metadata.json", BASE_DIR
+    )
+    VISION_DEVICE = os.getenv("VISION_DEVICE", "auto")
+    MASK_SCORE_THRESHOLD = min(1.0, max(0.0, _float("MASK_SCORE_THRESHOLD", 0.7)))
+    MASK_BINARY_THRESHOLD = min(1.0, max(0.0, _float("MASK_BINARY_THRESHOLD", 0.5)))
+    MASK_OVERLAY_ALPHA = min(1.0, max(0.0, _float("MASK_OVERLAY_ALPHA", 0.45)))
+    DRAW_BOUNDING_BOXES = _bool("DRAW_BOUNDING_BOXES", True)
+    DRAW_INFERENCE_STATS = _bool("DRAW_INFERENCE_STATS", True)
 
     DEFECT_CONFIRM_FRAMES = max(1, _int("DEFECT_CONFIRM_FRAMES", 3))
     NORMAL_RESET_FRAMES = max(1, _int("NORMAL_RESET_FRAMES", 5))
@@ -67,4 +88,3 @@ class TestConfig(Config):
     DATABASE_AUTO_CREATE = True
     SQLALCHEMY_DATABASE_URI = "sqlite+pysqlite:///:memory:"
     SQLALCHEMY_ENGINE_OPTIONS = {}
-

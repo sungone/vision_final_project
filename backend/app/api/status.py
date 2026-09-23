@@ -22,13 +22,17 @@ def system_status():
         {
             "cameraConnected": runtime.camera.connected,
             "visionWorkerRunning": runtime.vision.running,
+            "modelLoaded": runtime.model_loaded,
+            "visionDevice": runtime.vision_device,
             "databaseConnected": database_connected,
             "eventState": runtime.event_manager.state.value,
             "lastCapturedAt": runtime.camera.last_frame_at.isoformat() if runtime.camera.last_frame_at else None,
             "lastProcessedAt": runtime.vision.last_processed_at.isoformat() if runtime.vision.last_processed_at else None,
+            "lastInferenceTimeMs": runtime.vision.last_inference_time_ms,
+            "lastDetectionCount": runtime.vision.last_detection_count,
             "cameraError": runtime.camera.last_error,
             "visionError": runtime.vision.last_error,
+            "modelError": runtime.model_error,
             "databaseError": database_error,
         }
     )
-

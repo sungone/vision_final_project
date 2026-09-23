@@ -1,0 +1,35 @@
+{
+  "architecture": "maskrcnn_resnet50_fpn_v2",
+  "num_classes": 4,
+  "categories": [
+    {
+      "id": 1,
+      "name": "bolt",
+      "supercategory": "part"
+    },
+    {
+      "id": 2,
+      "name": "washer",
+      "supercategory": "part"
+    },
+    {
+      "id": 3,
+      "name": "thread",
+      "supercategory": "part"
+    }
+  ],
+  "cat_to_label": {
+    "1": 1,
+    "2": 2,
+    "3": 3
+  },
+  "label_to_name": {
+    "1": "bolt",
+    "2": "washer",
+    "3": "thread"
+  },
+  "min_size": 640,
+  "max_size": 1024,
+  "score_threshold": 0.5,
+  "best_val_mean_best_mask_iou": 0.9468675443295682
+}

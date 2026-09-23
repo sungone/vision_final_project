@@ -9,6 +9,7 @@ def app(tmp_path):
         {
             "TESTING": True,
             "START_BACKGROUND_WORKERS": False,
+            "VISION_PROCESSOR": "mock",
             "DATABASE_AUTO_CREATE": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite+pysqlite:///:memory:",
             "SQLALCHEMY_ENGINE_OPTIONS": {},
@@ -22,4 +23,3 @@ def app(tmp_path):
 @pytest.fixture()
 def client(app):
     return app.test_client()
-

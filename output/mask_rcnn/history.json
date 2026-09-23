@@ -1,0 +1,62 @@
+[
+  {
+    "epoch": 1,
+    "trainLoss": 0.5308678199531166,
+    "valMeanBestMaskIoU": 0.9292147306913741,
+    "seconds": 97.0228762626648
+  },
+  {
+    "epoch": 2,
+    "trainLoss": 0.19438556800032877,
+    "valMeanBestMaskIoU": 0.9398021466946334,
+    "seconds": 95.4271993637085
+  },
+  {
+    "epoch": 3,
+    "trainLoss": 0.16737197937479445,
+    "valMeanBestMaskIoU": 0.9407808901218886,
+    "seconds": 93.3789279460907
+  },
+  {
+    "epoch": 4,
+    "trainLoss": 0.14970680658414864,
+    "valMeanBestMaskIoU": 0.9406350318635448,
+    "seconds": 93.73422026634216
+  },
+  {
+    "epoch": 5,
+    "trainLoss": 0.1276497198328091,
+    "valMeanBestMaskIoU": 0.9453281154123585,
+    "seconds": 93.35579824447632
+  },
+  {
+    "epoch": 6,
+    "trainLoss": 0.1232632125259205,
+    "valMeanBestMaskIoU": 0.9458303016223265,
+    "seconds": 94.32750535011292
+  },
+  {
+    "epoch": 7,
+    "trainLoss": 0.11986685216806497,
+    "valMeanBestMaskIoU": 0.9468675443295682,
+    "seconds": 96.79100751876831
+  },
+  {
+    "epoch": 8,
+    "trainLoss": 0.1199206091985581,
+    "valMeanBestMaskIoU": 0.9454655553517717,
+    "seconds": 96.30054974555969
+  },
+  {
+    "epoch": 9,
+    "trainLoss": 0.11617868104178435,
+    "valMeanBestMaskIoU": 0.9456300551301977,
+    "seconds": 94.11768174171448
+  },
+  {
+    "epoch": 10,
+    "trainLoss": 0.11603428613228403,
+    "valMeanBestMaskIoU": 0.9459947089800674,
+    "seconds": 93.68827819824219
+  }
+]

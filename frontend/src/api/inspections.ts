@@ -53,7 +53,8 @@ export interface Filters {
 }
 export interface ApiErrorBody { timestamp: string; status: number; code: string; message: string }
 export class InspectionApiError extends Error {
-  constructor(public readonly response: ApiErrorBody) { super(response.message); this.name = 'InspectionApiError'; }
+  readonly response: ApiErrorBody;
+  constructor(response: ApiErrorBody) { super(response.message); this.response = response; this.name = 'InspectionApiError'; }
 }
 export function createInspectionApi(baseUrl = '') {
   const base = baseUrl.replace(/\/$/, '');

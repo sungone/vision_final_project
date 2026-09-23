@@ -1,15 +1,15 @@
 # Vision Inspection Backend MVP
 
-USB/UVC 카메라 영상에서 Bolt, Nut, Washer 조립 상태를 검사하기 위한 Flask 기반 실시간 백엔드입니다. 현재 단계는 카메라 수집, 스레드 안전한 최신 프레임 전달, Mock Vision 처리, MJPEG 스트리밍, 검사 이벤트 중복 억제, PostgreSQL 조회 API에 집중합니다.
+USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 Mask R-CNN을 적용하고 Bolt, Washer, Thread/Nut instance mask를 시각화해 React로 전달하는 실시간 검사 애플리케이션입니다.
 
-YOLO26 학습·추론, 실제 Missing/Alignment/Fastening 판정, KPI 계산, 완성된 React UI는 이 MVP의 범위가 아닙니다.
+실제 Missing/Alignment/Fastening 판정과 물리 단위 KPI 계산은 아직 구현하지 않습니다.
 
 ## 핵심 구조
 
 ```text
 USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
                                       ↓
-                                Vision Worker
+                         Mask R-CNN Vision Worker
                                       ↓
                       Latest Processed Frame + Result
                               ↙                    ↘
@@ -24,7 +24,8 @@ USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
 - 여러 브라우저가 접속해도 camera 또는 vision worker가 추가로 생성되지 않습니다.
 - 최신 프레임 하나만 유지해 지연이 누적되는 queue backlog를 방지합니다.
 - `DEFECT` frame마다 저장하지 않고 상태 전이로 확정된 inspection event만 저장합니다.
-- Vision processor 경계를 유지하므로 추후 Mock 구현을 YOLO26 + Rule Engine으로 교체할 수 있습니다.
+- 모델은 서버 시작 시 한 번만 로드되며 client 수가 늘어도 inference가 중복되지 않습니다.
+- Bolt와 Thread/Nut는 파란색, Washer는 노란색 mask overlay로 표시됩니다.
 
 자세한 설계는 [Architecture](docs/ARCHITECTURE.md), API 계약은 [API](docs/API.md), 저장 모델은 [Database](docs/DATABASE.md)를 참고하세요.
 
@@ -77,6 +78,12 @@ $env:CAMERA_FPS = "30"
 $env:VISION_FPS = "10"
 $env:STREAM_FPS = "10"
 $env:JPEG_QUALITY = "80"
+$env:VISION_PROCESSOR = "mask_rcnn"
+$env:MASK_RCNN_MODEL_PATH = "../output/mask_rcnn/mask_rcnn_state_dict.pt"
+$env:MASK_RCNN_METADATA_PATH = "../output/mask_rcnn/model_metadata.json"
+$env:VISION_DEVICE = "auto"
+$env:MASK_SCORE_THRESHOLD = "0.70"
+$env:MASK_BINARY_THRESHOLD = "0.50"
 $env:DEFECT_CONFIRM_FRAMES = "3"
 $env:NORMAL_RESET_FRAMES = "5"
 $env:EVENT_COOLDOWN_SECONDS = "0"
@@ -93,6 +100,16 @@ $env:START_BACKGROUND_WORKERS = "true"
 ```
 
 기본 주소는 `http://localhost:5000`입니다.
+
+React Viewer는 별도 터미널에서 실행합니다.
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+기본 React 주소는 `http://localhost:5173`이며 `/api` 요청은 Flask `5000` 포트로 proxy됩니다.
 
 ## 동작 확인
 
@@ -132,6 +149,12 @@ http://localhost:5000/api/v1/stream
 | `VISION_FPS` | `10` | mock/future vision 처리 목표 FPS |
 | `STREAM_FPS` | `10` | MJPEG 전송 최대 FPS |
 | `JPEG_QUALITY` | `80` | OpenCV JPEG quality, 1–100 |
+| `MASK_RCNN_MODEL_PATH` | `output/mask_rcnn/mask_rcnn_state_dict.pt` | 학습된 state dict |
+| `MASK_RCNN_METADATA_PATH` | `output/mask_rcnn/model_metadata.json` | architecture/class mapping metadata |
+| `VISION_DEVICE` | `auto` | `auto`, `cuda`, `cpu` |
+| `MASK_SCORE_THRESHOLD` | `0.70` | instance confidence threshold |
+| `MASK_BINARY_THRESHOLD` | `0.50` | mask probability threshold |
+| `MASK_OVERLAY_ALPHA` | `0.45` | mask 투명도 |
 | `DEFECT_CONFIRM_FRAMES` | `3` | defect 확정에 필요한 연속 frame 수 |
 | `NORMAL_RESET_FRAMES` | `5` | 다음 event를 허용하기 위한 연속 normal frame 수 |
 | `EVENT_COOLDOWN_SECONDS` | `0` | 상태머신을 보조하는 선택적 cooldown |
@@ -159,11 +182,10 @@ Camera FPS, Vision FPS, Stream FPS는 독립적입니다. 30 FPS 카메라를 �
 .\.venv\Scripts\python -m pytest -q
 ```
 
-현재 단위 테스트는 실제 USB/UVC 카메라나 PostgreSQL 없이 frame buffer, event manager, mock vision processor, MJPEG 생성기를 검증합니다. 실제 카메라와 PostgreSQL 연결은 로컬 smoke test로 별도 확인합니다.
+단위 테스트는 실제 카메라 없이 frame buffer, event manager, score/mask filtering, mask 색상 overlay와 MJPEG endpoint를 검증합니다. 실제 모델 smoke test는 학습 이미지 한 장으로 load, inference, visualization, JPEG encoding을 확인합니다.
 
 ## 현재 범위 밖
 
-- YOLO26 segmentation 학습 및 `.pt` inference
 - 실제 부품 누락·정렬·체결 판정
 - 실제 KPI 계산
 - 제품 추적 또는 PLC 연동

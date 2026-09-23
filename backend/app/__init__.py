@@ -7,6 +7,8 @@ from flask import Flask, jsonify
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
 from app.api import inspections_bp, status_bp, stream_bp
 from app.config import Config
 from app.database import db
@@ -14,7 +16,6 @@ from app.lifecycle import install_runtime
 
 
 def create_app(config: dict | type | None = None) -> Flask:
-    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
     app = Flask(__name__)
     app.config.from_object(Config)
     if isinstance(config, dict):
@@ -54,4 +55,3 @@ def _register_error_handlers(app: Flask) -> None:
     def handle_unexpected_error(error: Exception):
         app.logger.exception("unhandled request error")
         return jsonify({"error": "internal_server_error", "message": "Unexpected server error."}), 500
-

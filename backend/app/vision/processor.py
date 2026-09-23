@@ -5,7 +5,44 @@ from datetime import datetime, timezone
 import cv2
 import numpy as np
 
-from .contracts import InspectionResult, NORMAL
+from .contracts import InspectionResult, NORMAL, NOT_EVALUATED
+from .mask_rcnn_predictor import MaskRCNNPredictor
+from .postprocessor import SegmentationPostProcessor
+from .visualizer import InspectionVisualizer
+
+
+class MaskRCNNVisionProcessor:
+    def __init__(
+        self,
+        predictor: MaskRCNNPredictor,
+        postprocessor: SegmentationPostProcessor,
+        visualizer: InspectionVisualizer,
+    ) -> None:
+        self.predictor = predictor
+        self.postprocessor = postprocessor
+        self.visualizer = visualizer
+
+    @property
+    def device_name(self) -> str:
+        return str(self.predictor.device)
+
+    def process(self, frame: np.ndarray) -> InspectionResult:
+        prediction, inference_time_ms = self.predictor.predict(frame)
+        vision_result = self.postprocessor.process(prediction, inference_time_ms)
+        processed = self.visualizer.render(frame, vision_result)
+        return InspectionResult(
+            overall_result=NOT_EVALUATED,
+            missing_component_result=NOT_EVALUATED,
+            alignment_result=NOT_EVALUATED,
+            fastening_result=NOT_EVALUATED,
+            metrics={
+                "detectedInstanceCount": len(vision_result.instances),
+                "inferenceTimeMs": round(inference_time_ms, 2),
+            },
+            processed_frame=processed,
+            inspection_time=vision_result.timestamp,
+            vision_result=vision_result,
+        )
 
 
 class MockVisionProcessor:
@@ -28,4 +65,3 @@ class MockVisionProcessor:
             processed_frame=processed,
             inspection_time=now,
         )
-

@@ -1,0 +1,4 @@
+pycocotools>=2.0.10
+tqdm>=4.67
+pillow>=11.0
+numpy>=2.0

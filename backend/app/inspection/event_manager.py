@@ -40,6 +40,8 @@ class InspectionEventManager:
                 self._defect_count = 0
                 now = time.monotonic()
                 if now - self._last_emitted_monotonic < self.cooldown_seconds:
+                    self._state = InspectionState.DEFECT_CANDIDATE
+                    self._defect_count = self.confirm_frames - 1
                     return None
                 self._last_emitted_monotonic = now
                 return result
