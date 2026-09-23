@@ -23,6 +23,7 @@ def system_status():
             "cameraConnected": runtime.camera.connected,
             "visionWorkerRunning": runtime.vision.running,
             "modelLoaded": runtime.model_loaded,
+            "modelType": runtime.model_type,
             "visionDevice": runtime.vision_device,
             "databaseConnected": database_connected,
             "eventState": runtime.event_manager.state.value,

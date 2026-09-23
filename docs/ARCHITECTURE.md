@@ -2,7 +2,7 @@
 
 ## Scope
 
-This application runs a trained torchvision Mask R-CNN model for real-time Bolt/Washer/Thread instance segmentation. Production defect rules, physical calibration, PLC integration, and MES functions remain outside the current scope.
+This application runs a trained YOLO26 segmentation model for real-time Bolt/Washer/Thread instance segmentation. A Mask R-CNN adapter remains selectable for model comparison. Production defect rules, physical calibration, PLC integration, and MES functions remain outside the current scope.
 
 ## System flow
 
@@ -12,7 +12,7 @@ flowchart TD
     DEVICE --> CAPTURE[OpenCV VideoCapture\nCamera Capture Worker]
     CAPTURE --> RAW[Latest Raw Frame Buffer]
     RAW --> WORKER[Vision Worker]
-    WORKER --> MODEL[Mask R-CNN\nLoaded once]
+    WORKER --> MODEL[YOLO26 Segmentation\nLoaded once]
     MODEL --> POST[Score and Mask Filtering]
     POST --> STRUCTURED[FrameVisionResult]
     STRUCTURED --> VIZ[Mask Visualization]
@@ -55,7 +55,7 @@ A queue is still appropriate for data that must never be skipped, such as a PLC-
 
 ### Vision worker and processor boundary
 
-The vision worker wakes at `VISION_FPS`, reads the newest raw frame, and passes it to `MaskRCNNVisionProcessor`. The model is reconstructed as `maskrcnn_resnet50_fpn_v2`, loaded once from its state dict, moved to the configured device, and kept in evaluation mode. Inference uses `torch.inference_mode()`.
+The vision worker wakes at `VISION_FPS`, reads the newest raw frame, and passes it to the configured processor. `VISION_PROCESSOR=yolo26` loads `output/yolo26/best.pt` once through Ultralytics. `VISION_PROCESSOR=mask_rcnn` retains the previous torchvision state-dict adapter. Both processors return the same internal contracts and reuse the same visualization, JPEG, MJPEG, event, and API paths.
 
 ```text
 InspectionResult

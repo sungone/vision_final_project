@@ -14,7 +14,7 @@ from .contracts import (
     InspectionResult,
     VisionProcessor,
 )
-from .processor import MaskRCNNVisionProcessor, MockVisionProcessor
+from .mask_rcnn_processor import MaskRCNNVisionProcessor, MockVisionProcessor
 
 __all__ = [
     "DEFECT",

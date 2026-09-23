@@ -12,6 +12,24 @@
 
 Inspection result values are `NORMAL` or `DEFECT`. A processor that has not evaluated an individual rule may use `NOT_EVALUATED` for that individual result; `overallResult` remains `NORMAL` or `DEFECT` for persisted events.
 
+## Health check
+
+### `GET /api/v1/health`
+
+Cloudflare Tunnel과 local process가 DB query 없이 backend origin 상태를 확인하는 lightweight endpoint다.
+
+```json
+{
+  "status": "ok",
+  "service": "vision-backend",
+  "modelLoaded": true,
+  "modelType": "yolo26-seg"
+}
+```
+
+- `200 OK`: configured model 또는 mock processor 사용 가능
+- `503 Service Unavailable`: model load 실패로 mock fallback 상태
+
 ## Stream video
 
 ### `GET /api/v1/stream`
@@ -155,6 +173,7 @@ Provides lightweight operational state for the MVP.
   "cameraConnected": true,
   "visionWorkerRunning": true,
   "modelLoaded": true,
+  "modelType": "yolo26-seg",
   "visionDevice": "cuda",
   "databaseConnected": true,
   "eventState": "NORMAL",

@@ -1,6 +1,6 @@
 # Vision Inspection Backend MVP
 
-USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 Mask R-CNN을 적용하고 Bolt, Washer, Thread/Nut instance mask를 시각화해 React로 전달하는 실시간 검사 애플리케이션입니다.
+USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 YOLO26 segmentation 모델을 적용하고 Bolt, Washer, Thread/Nut instance mask를 시각화해 React로 전달하는 실시간 검사 애플리케이션입니다. 기존 Mask R-CNN adapter도 환경변수로 선택할 수 있다.
 
 실제 Missing/Alignment/Fastening 판정과 물리 단위 KPI 계산은 아직 구현하지 않습니다.
 
@@ -9,7 +9,7 @@ USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 Mask R-CNN을 적�
 ```text
 USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
                                       ↓
-                         Mask R-CNN Vision Worker
+                         YOLO26 Vision Worker
                                       ↓
                       Latest Processed Frame + Result
                               ↙                    ↘
@@ -28,6 +28,10 @@ USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
 - Bolt와 Thread/Nut는 파란색, Washer는 노란색 mask overlay로 표시됩니다.
 
 자세한 설계는 [Architecture](docs/ARCHITECTURE.md), API 계약은 [API](docs/API.md), 저장 모델은 [Database](docs/DATABASE.md)를 참고하세요.
+
+`backend/app` 패키지별 책임과 의존 관계는 [Backend App Structure](docs/BACKEND_APP_STRUCTURE.md)를 참고하세요.
+
+외부 HTTPS 접속을 위한 Cloudflare Tunnel 설정은 [Cloudflare Tunnel 실행 가이드](docs/CLOUDFLARE_TUNNEL.md)를 참고하세요.
 
 ## 요구 사항
 
@@ -78,9 +82,10 @@ $env:CAMERA_FPS = "30"
 $env:VISION_FPS = "10"
 $env:STREAM_FPS = "10"
 $env:JPEG_QUALITY = "80"
-$env:VISION_PROCESSOR = "mask_rcnn"
-$env:MASK_RCNN_MODEL_PATH = "../output/mask_rcnn/mask_rcnn_state_dict.pt"
-$env:MASK_RCNN_METADATA_PATH = "../output/mask_rcnn/model_metadata.json"
+$env:VISION_PROCESSOR = "yolo26"
+$env:YOLO26_MODEL_PATH = "../output/yolo26/best.pt"
+$env:YOLO_IMAGE_SIZE = "640"
+$env:YOLO_SCORE_THRESHOLD = "0.70"
 $env:VISION_DEVICE = "auto"
 $env:MASK_SCORE_THRESHOLD = "0.70"
 $env:MASK_BINARY_THRESHOLD = "0.50"
@@ -149,6 +154,11 @@ http://localhost:5000/api/v1/stream
 | `VISION_FPS` | `10` | mock/future vision 처리 목표 FPS |
 | `STREAM_FPS` | `10` | MJPEG 전송 최대 FPS |
 | `JPEG_QUALITY` | `80` | OpenCV JPEG quality, 1–100 |
+| `VISION_PROCESSOR` | `yolo26` | `yolo26`, `mask_rcnn`, `mock` 중 선택 |
+| `YOLO26_MODEL_PATH` | `output/yolo26/best.pt` | YOLO26 segmentation checkpoint |
+| `YOLO_IMAGE_SIZE` | `640` | YOLO inference 입력 크기 |
+| `YOLO_SCORE_THRESHOLD` | `0.70` | YOLO instance confidence threshold |
+| `YOLO_IOU_THRESHOLD` | `0.70` | YOLO NMS IoU threshold |
 | `MASK_RCNN_MODEL_PATH` | `output/mask_rcnn/mask_rcnn_state_dict.pt` | 학습된 state dict |
 | `MASK_RCNN_METADATA_PATH` | `output/mask_rcnn/model_metadata.json` | architecture/class mapping metadata |
 | `VISION_DEVICE` | `auto` | `auto`, `cuda`, `cpu` |

@@ -18,6 +18,9 @@ env/
 .env
 .env.*
 !.env.example
+cloudflare/config.yml
+cloudflare/*.json
+.cloudflared/
 
 # Runtime output
 backend/storage/defects/*

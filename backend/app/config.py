@@ -32,6 +32,11 @@ def _path(name: str, default: Path, relative_to: Path) -> str:
     return str(configured.resolve())
 
 
+def _list(name: str, default: str = "") -> tuple[str, ...]:
+    value = os.getenv(name, default)
+    return tuple(item.strip().rstrip("/") for item in value.split(",") if item.strip())
+
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 PROJECT_DIR = BASE_DIR.parent
 
@@ -41,6 +46,7 @@ class Config:
     TESTING = False
     FLASK_HOST = os.getenv("FLASK_HOST", "0.0.0.0")
     FLASK_PORT = _int("FLASK_PORT", 5000)
+    CORS_ALLOWED_ORIGINS = _list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "postgresql+psycopg://vision:vision@localhost:5432/vision"
@@ -58,7 +64,7 @@ class Config:
     VISION_FPS = _float("VISION_FPS", 10.0)
     STREAM_FPS = _float("STREAM_FPS", 10.0)
     JPEG_QUALITY = min(100, max(1, _int("JPEG_QUALITY", 80)))
-    VISION_PROCESSOR = os.getenv("VISION_PROCESSOR", "mask_rcnn").strip().lower()
+    VISION_PROCESSOR = os.getenv("VISION_PROCESSOR", "yolo26").strip().lower()
     MASK_RCNN_MODEL_PATH = _path(
         "MASK_RCNN_MODEL_PATH", PROJECT_DIR / "output" / "mask_rcnn" / "mask_rcnn_state_dict.pt", BASE_DIR
     )
@@ -71,6 +77,14 @@ class Config:
     MASK_OVERLAY_ALPHA = min(1.0, max(0.0, _float("MASK_OVERLAY_ALPHA", 0.45)))
     DRAW_BOUNDING_BOXES = _bool("DRAW_BOUNDING_BOXES", True)
     DRAW_INFERENCE_STATS = _bool("DRAW_INFERENCE_STATS", True)
+    YOLO26_MODEL_PATH = _path(
+        "YOLO26_MODEL_PATH", PROJECT_DIR / "output" / "yolo26" / "best.pt", BASE_DIR
+    )
+    YOLO_IMAGE_SIZE = max(32, _int("YOLO_IMAGE_SIZE", 640))
+    YOLO_SCORE_THRESHOLD = min(1.0, max(0.0, _float("YOLO_SCORE_THRESHOLD", 0.7)))
+    YOLO_IOU_THRESHOLD = min(1.0, max(0.0, _float("YOLO_IOU_THRESHOLD", 0.7)))
+    YOLO_MAX_DETECTIONS = max(1, _int("YOLO_MAX_DETECTIONS", 100))
+    YOLO_USE_HALF = _bool("YOLO_USE_HALF", True)
 
     DEFECT_CONFIRM_FRAMES = max(1, _int("DEFECT_CONFIRM_FRAMES", 3))
     NORMAL_RESET_FRAMES = max(1, _int("NORMAL_RESET_FRAMES", 5))

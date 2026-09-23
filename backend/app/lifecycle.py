@@ -11,8 +11,8 @@ from app.inspection import InspectionEventManager, InspectionService
 from app.repositories import InspectionRepository
 from app.vision.contracts import InspectionResult
 from app.vision.mask_rcnn_predictor import MaskRCNNPredictor
-from app.vision.postprocessor import SegmentationPostProcessor
-from app.vision.processor import MaskRCNNVisionProcessor, MockVisionProcessor
+from app.vision.mask_rcnn_postprocessor import SegmentationPostProcessor
+from app.vision.mask_rcnn_processor import MaskRCNNVisionProcessor, MockVisionProcessor
 from app.vision.visualizer import InspectionVisualizer
 from app.vision.worker import VisionWorker
 
@@ -29,6 +29,7 @@ class Runtime:
         self.latest_results: LatestValueBuffer[InspectionResult] = LatestValueBuffer()
         self.last_database_error: str | None = None
         self.model_loaded = False
+        self.model_type: str | None = None
         self.model_error: str | None = None
         self.vision_device: str | None = None
         self._started = False
@@ -61,9 +62,15 @@ class Runtime:
         )
 
     def _build_processor(self):
-        if self.app.config["VISION_PROCESSOR"] == "mock":
+        processor_type = self.app.config["VISION_PROCESSOR"]
+        if processor_type == "mock":
+            self.model_type = "mock"
             return MockVisionProcessor()
         try:
+            if processor_type == "yolo26":
+                return self._build_yolo26_processor()
+            if processor_type != "mask_rcnn":
+                raise ValueError(f"unsupported VISION_PROCESSOR: {processor_type}")
             predictor = MaskRCNNPredictor(
                 self.app.config["MASK_RCNN_MODEL_PATH"],
                 self.app.config["MASK_RCNN_METADATA_PATH"],
@@ -83,12 +90,45 @@ class Runtime:
                 ),
             )
             self.model_loaded = True
+            self.model_type = "mask_rcnn"
             self.vision_device = processor.device_name
             return processor
         except Exception as exc:
             self.model_error = str(exc)
-            logger.exception("Mask R-CNN could not be loaded; using mock processor")
+            self.model_type = "mock-fallback"
+            logger.exception("vision model could not be loaded; using mock processor")
             return MockVisionProcessor()
+
+    def _build_yolo26_processor(self):
+        from app.vision.yolo26_postprocessor import YOLO26SegmentationPostProcessor
+        from app.vision.yolo26_predictor import YOLO26SegPredictor
+        from app.vision.yolo26_processor import YOLO26VisionProcessor
+
+        predictor = YOLO26SegPredictor(
+            self.app.config["YOLO26_MODEL_PATH"],
+            self.app.config["VISION_DEVICE"],
+            self.app.config["YOLO_IMAGE_SIZE"],
+            self.app.config["YOLO_SCORE_THRESHOLD"],
+            self.app.config["YOLO_IOU_THRESHOLD"],
+            self.app.config["YOLO_MAX_DETECTIONS"],
+            self.app.config["YOLO_USE_HALF"],
+        )
+        processor = YOLO26VisionProcessor(
+            predictor,
+            YOLO26SegmentationPostProcessor(
+                predictor.label_to_name,
+                self.app.config["MASK_BINARY_THRESHOLD"],
+            ),
+            InspectionVisualizer(
+                self.app.config["MASK_OVERLAY_ALPHA"],
+                self.app.config["DRAW_BOUNDING_BOXES"],
+                self.app.config["DRAW_INFERENCE_STATS"],
+            ),
+        )
+        self.model_loaded = True
+        self.model_type = "yolo26-seg"
+        self.vision_device = processor.device_name
+        return processor
 
     def start(self) -> None:
         with self._lock:

@@ -7,7 +7,7 @@ import numpy as np
 
 from .contracts import InspectionResult, NORMAL, NOT_EVALUATED
 from .mask_rcnn_predictor import MaskRCNNPredictor
-from .postprocessor import SegmentationPostProcessor
+from .mask_rcnn_postprocessor import SegmentationPostProcessor
 from .visualizer import InspectionVisualizer
 
 

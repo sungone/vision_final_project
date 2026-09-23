@@ -35,3 +35,15 @@ def test_status_endpoint(client):
     assert response.status_code == 200
     assert response.get_json()["databaseConnected"] is True
 
+
+def test_health_endpoint_does_not_require_database_query(client):
+    response = client.get("/api/v1/health")
+    assert response.status_code == 200
+    assert response.get_json()["service"] == "vision-backend"
+
+
+def test_cors_allows_only_configured_frontend_origin(client):
+    allowed = client.get("/api/v1/health", headers={"Origin": "http://localhost:5173"})
+    blocked = client.get("/api/v1/health", headers={"Origin": "https://unknown.example"})
+    assert allowed.headers["Access-Control-Allow-Origin"] == "http://localhost:5173"
+    assert "Access-Control-Allow-Origin" not in blocked.headers

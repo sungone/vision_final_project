@@ -12,7 +12,7 @@ export default function LiveStreamViewer() {
         <div>
           <div className="flex items-center gap-2">
             <Video size={21} className="text-[#0075c9]" />
-            <h2 className="text-xl font-bold">실시간 Mask R-CNN 검사 영상</h2>
+            <h2 className="text-xl font-bold">실시간 YOLO26 Segmentation 검사 영상</h2>
           </div>
           <p className="mt-2 text-sm text-[#697d90]">
             볼트와 Thread/Nut 영역은 파란색, 와셔는 노란색 마스크로 표시됩니다.
@@ -35,7 +35,7 @@ export default function LiveStreamViewer() {
         <img
           key={cacheKey}
           src={getVisionStreamUrl(cacheKey)}
-          alt="실시간 볼트 체결 Mask R-CNN 검사"
+          alt="실시간 볼트 체결 YOLO26 Segmentation 검사"
           className="max-h-[70vh] w-full object-contain"
           onLoad={() => setStreamError(false)}
           onError={() => setStreamError(true)}

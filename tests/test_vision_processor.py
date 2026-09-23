@@ -1,6 +1,6 @@
 import numpy as np
 
-from backend.app.vision.processor import MockVisionProcessor
+from backend.app.vision.mask_rcnn_processor import MockVisionProcessor
 
 
 def test_mock_processor_returns_overlay_without_mutating_raw_frame():
