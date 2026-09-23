@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   ScanLine,
   Settings,
+  Video,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
@@ -18,6 +19,7 @@ const navigation: {
   icon: LucideIcon
 }[] = [
   { name: '대시보드', path: '/dashboard', icon: LayoutDashboard },
+  { name: '실시간 검사', path: '/realtime', icon: Video,},
   { name: '이미지 검사', path: '/inspection', icon: ScanLine },
   { name: '검사 이력', path: '/history', icon: History },
   { name: '환경 설정', path: '/settings', icon: Settings },

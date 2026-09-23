@@ -10,6 +10,7 @@ import HistoryPage from './pages/HistoryPage'
 import InspectionDetailPage from './pages/InspectionDetailPage'
 import InspectionPage from './pages/InspectionPage'
 import SettingsPage from './pages/SettingsPage'
+import RealtimeInspectionPage from './pages/RealtimeInspectionPage'
 
 export default function App() {
   return (
@@ -31,6 +32,11 @@ export default function App() {
           <Route
             path="/inspection"
             element={<InspectionPage />}
+          />
+
+          <Route
+            path="/realtime"
+            element={<RealtimeInspectionPage />}
           />
 
           <Route

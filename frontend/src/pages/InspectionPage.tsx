@@ -13,6 +13,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import CameraLiveCapture from '../components/CameraLiveCapture'
 import FileImportControls, {
   type FileImportControlsHandle,
 } from '../components/FileImportControls'
@@ -286,6 +287,11 @@ export default function InspectionPage() {
           {uploadError}
         </div>
       )}
+
+      <CameraLiveCapture
+        onCapture={(file) => addFiles([file])}
+        onError={setUploadError}
+      />
 
       <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_376px]">
         <section className="rounded-xl border border-[#d9e4ee] bg-white p-5">
