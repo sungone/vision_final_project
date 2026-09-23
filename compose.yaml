@@ -1,49 +1,21 @@
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: vision
-      POSTGRES_USER: vision
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-vision-local}
+      POSTGRES_DB: ${POSTGRES_DB:-vision_inspection}
+      POSTGRES_USER: ${POSTGRES_USER:-vision}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vision}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vision -d vision"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
-      timeout: 3s
-      retries: 20
-  vision:
-    build: ./vision-service
-    environment:
-      MODEL_PATH: /models/best.pt
-      VISION_SERVICE_TOKEN: ${VISION_SERVICE_TOKEN:-}
-    volumes:
-      - ./vision-service/models:/models:ro
-    expose:
-      - "8001"
-  backend:
-    build: ./backend
-    environment:
-      DATABASE_URL: jdbc:postgresql://postgres:5432/vision
-      DATABASE_USER: vision
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-vision-local}
-      VISION_URL: http://vision:8001
-      VISION_SERVICE_TOKEN: ${VISION_SERVICE_TOKEN:-}
-      IMAGE_STORAGE_ROOT: /data
-      SETTINGS_API_KEY: ${SETTINGS_API_KEY:-}
-      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
-    ports:
-      - "127.0.0.1:8080:8080"
-    volumes:
-      - inspection-images:/data
-    depends_on:
-      postgres:
-        condition: service_healthy
-      vision:
-        condition: service_started
-volumes:
-  postgres-data:
-  inspection-images:
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
 
+volumes:
+  postgres_data:

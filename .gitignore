@@ -1,151 +1,48 @@
-# =========================================================
-# React / Node.js
-# =========================================================
-node_modules/
-dist/
-build/
-.next/
-coverage/
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# React environment
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-
-# =========================================================
-# Spring Boot / Java
-# =========================================================
-target/
-*.class
-*.jar
-*.war
-
-# Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
-
-# Maven
-.mvn/timing.properties
-
-# Spring Boot environment / local config
-application-local.properties
-application-local.yml
-application-local.yaml
-
-
-# =========================================================
 # Python
-# =========================================================
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# Virtual Environment
+# Virtual environments
 .venv/
 venv/
 env/
 
-# Python build
-build/
-dist/
-*.egg-info/
-
-# pytest / coverage
-.pytest_cache/
-.coverage
-htmlcov/
-
-
-# =========================================================
-# AI / YOLO
-# =========================================================
-runs/
-weights/
-checkpoints/
-
-*.pt
-*.pth
-*.onnx
-*.engine
-
-# 학습 데이터셋
-datasets/
-dataset/
-
-# 필요하다면 직접 촬영한 원본 이미지도 제외
-data/raw/
-data/train/
-data/val/
-data/test/
-
-
-# =========================================================
-# Vision 검사 결과 이미지
-# =========================================================
-#dataset/training_images/original/
-#dataset/training_images/result/
-#dataset/training_images/ng/
-#results/
-#outputs/
-
-
-# =========================================================
-# Database / Runtime
-# =========================================================
-*.db
-*.sqlite
-*.sqlite3
-
-logs/
-*.log
-
-
-# =========================================================
-# IDE
-# =========================================================
-.idea/
-.vscode/
-*.iml
-
-# Visual Studio
-.vs/
-
-
-# =========================================================
-# OS
-# =========================================================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-
-# =========================================================
-# Secrets / Environment
-# =========================================================
+# Local configuration and credentials
 .env
 .env.*
 !.env.example
 
-*.pem
-*.key
-
-
-# =========================================================
-# Temporary Files
-# =========================================================
-tmp/
-temp/
-*.tmp
-~$*
-# Local implementation verification/runtime
-.tools/
+# Runtime output
+backend/storage/defects/*
+!backend/storage/defects/.gitkeep
 storage/inspections/
+.tools/
+*.log
+
+# Local models and generated datasets
+*.pt
+*.pth
+*.onnx
+*.engine
+runs/
+weights/
+checkpoints/
+datasets/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Frontend artifacts, if a client is added later
+node_modules/
+dist/
+build/

@@ -132,7 +132,7 @@ FROM inspection WHERE status <> 'COMPLETED' ORDER BY inspection_time;
 - 500: IMAGE_STORAGE_FAILED, INTERNAL_ERROR
 - 403: FORBIDDEN
 
-내부 exception/SQL/서버 경로/모델 stack trace는 공개 응답에 포함하지 않습니다. 서버 로그에서 확인합니다. Vision 서비스는 Compose 내부 전용이며 선택적으로 서비스 토큰 인증을 지원합니다. `VISION_SERVICE_TOKEN`을 설정하면 Backend가 `X-Vision-Service-Token` 헤더로 전달합니다.
+내부 exception/SQL/서버 경로/모델 stack trace는 공개 응답에 포함하지 않습니다. 서버 로그에서 확인합니다. Vision 서비스는 내부 API이며 선택적으로 서비스 토큰 인증을 지원합니다. `VISION_SERVICE_TOKEN`을 설정하면 Backend가 `X-Vision-Service-Token` 헤더로 전달합니다.
 
 ## 검증 범위
 
@@ -143,4 +143,5 @@ FROM inspection WHERE status <> 'COMPLETED' ORDER BY inspection_time;
 - Python tests: 가짜 YOLO raw result로 변환 계약과 예외 처리 검증. 실제 학습 weights/승인 데이터가 저장소에 없으므로 실제 추론 품질/정확도 검증은 별도 필요합니다.
 
 관련 구현 기준: [Spring multipart REST client](https://docs.spring.io/spring-framework/reference/6.2/integration/rest-clients.html), [Ultralytics prediction results](https://docs.ultralytics.com/modes/predict/).
+
 

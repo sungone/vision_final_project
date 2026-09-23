@@ -683,7 +683,7 @@ project-root/
 │  ├─ ui-kit/
 │  └─ eslint-config/
 ├─ infra/
-│  ├─ docker/
+
 │  ├─ kubernetes/
 │  └─ migrations/
 ├─ docs/
@@ -692,7 +692,7 @@ project-root/
 │  └─ adr/
 ├─ openapi/
 │  └─ openapi.yaml
-└─ docker-compose.yml
+
 ```
 
 FrontEnd와 Backend가 같은 저장소가 아니라면 `api-contract`는 OpenAPI 문서를 단일 진실 공급원으로 두고 CI에서 TypeScript 타입/클라이언트를 생성한다.
@@ -736,4 +736,5 @@ FrontEnd와 Backend가 같은 저장소가 아니라면 `api-contract`는 OpenAP
 - 이미지 binary는 Object Storage, 검색·집계 데이터는 PostgreSQL에 저장한다.
 - 초기 버전은 단일 이미지 동기 REST로 단순하게 시작하고 처리시간/부하 근거가 생길 때 큐 기반 비동기로 확장한다.
 - 실제 토크 센서가 없으면 “체결 강도”를 영상 대용 지표로 명시해 물리 측정값과 혼동하지 않는다.
+
 
