@@ -1,6 +1,7 @@
 import {
   AlertCircle,
   Camera,
+  Expand,
   Play,
   RefreshCw,
   ScanLine,
@@ -37,12 +38,14 @@ type RealtimeAnalysisResult = {
   detections: Detection[]
 }
 
-type RecentResult = RealtimeAnalysisResult & {
-  id: string
-}
+type RecentResult =
+  RealtimeAnalysisResult & {
+    id: string
+  }
 
 const REALTIME_MODE =
-  import.meta.env.VITE_REALTIME_MODE ?? 'mock'
+  import.meta.env.VITE_REALTIME_MODE ??
+  'mock'
 
 const USE_MOCK_ANALYSIS =
   REALTIME_MODE !== 'server'
@@ -55,11 +58,13 @@ export default function RealtimeInspectionPage() {
   const [cameraDevices, setCameraDevices] =
     useState<MediaDeviceInfo[]>([])
 
-  const [selectedCameraId, setSelectedCameraId] =
-    useLocalStorageState(
-      'smart-bolt-camera-device',
-      '',
-    )
+  const [
+    selectedCameraId,
+    setSelectedCameraId,
+  ] = useLocalStorageState(
+    'smart-bolt-camera-device',
+    '',
+  )
 
   const [cameraActive, setCameraActive] =
     useState(false)
@@ -79,7 +84,7 @@ export default function RealtimeInspectionPage() {
   const [cameraError, setCameraError] =
     useState('')
 
-  const [realtimeError, setRealtimeError] =
+  const [analysisError, setAnalysisError] =
     useState('')
 
   const [lastResult, setLastResult] =
@@ -93,11 +98,17 @@ export default function RealtimeInspectionPage() {
   const [totalFrames, setTotalFrames] =
     useState(0)
 
+  const [fullscreen, setFullscreen] =
+    useState(false)
+
   const videoRef =
     useRef<HTMLVideoElement>(null)
 
   const captureCanvasRef =
     useRef<HTMLCanvasElement>(null)
+
+  const inspectionAreaRef =
+    useRef<HTMLElement>(null)
 
   const streamRef =
     useRef<MediaStream | null>(null)
@@ -106,9 +117,9 @@ export default function RealtimeInspectionPage() {
     useRef<WebSocket | null>(null)
 
   const cameraRequestIdRef = useRef(0)
-  const frameCounterRef = useRef(0)
-  const sendingRef = useRef(false)
   const analysisActiveRef = useRef(false)
+  const sendingRef = useRef(false)
+  const frameCounterRef = useRef(0)
   const lastSentAtRef = useRef(0)
 
   const responseTimerRef =
@@ -144,6 +155,27 @@ export default function RealtimeInspectionPage() {
   }, [])
 
   useEffect(() => {
+    function handleFullscreenChange() {
+      setFullscreen(
+        document.fullscreenElement ===
+          inspectionAreaRef.current,
+      )
+    }
+
+    document.addEventListener(
+      'fullscreenchange',
+      handleFullscreenChange,
+    )
+
+    return () => {
+      document.removeEventListener(
+        'fullscreenchange',
+        handleFullscreenChange,
+      )
+    }
+  }, [])
+
+  useEffect(() => {
     if (!analysisActive) {
       return
     }
@@ -166,18 +198,21 @@ export default function RealtimeInspectionPage() {
     return () => {
       window.clearInterval(intervalId)
     }
-    // 분석 상태와 FPS가 바뀔 때 재설정
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [analysisActive, frameRate])
 
   async function loadCameraDevices() {
-    if (!navigator.mediaDevices?.enumerateDevices) {
+    if (
+      !navigator.mediaDevices
+        ?.enumerateDevices
+    ) {
       return
     }
 
     try {
       const devices =
-        await navigator.mediaDevices.enumerateDevices()
+        await navigator.mediaDevices
+          .enumerateDevices()
 
       const cameras = devices.filter(
         (device) =>
@@ -190,7 +225,8 @@ export default function RealtimeInspectionPage() {
         cameras.length > 0 &&
         !cameras.some(
           (camera) =>
-            camera.deviceId === selectedCameraId,
+            camera.deviceId ===
+            selectedCameraId,
         )
       ) {
         setSelectedCameraId(
@@ -198,14 +234,16 @@ export default function RealtimeInspectionPage() {
         )
       }
     } catch {
-      // 카메라 실행 오류를 우선 표시
+      // 카메라 오류 메시지를 우선 표시
     }
   }
 
   async function startCamera(
-    requestedDeviceId = selectedCameraId,
+    requestedDeviceId =
+      selectedCameraId,
   ) {
     setCameraError('')
+    setAnalysisError('')
     setCameraReady(false)
 
     if (!window.isSecureContext) {
@@ -215,7 +253,10 @@ export default function RealtimeInspectionPage() {
       return
     }
 
-    if (!navigator.mediaDevices?.getUserMedia) {
+    if (
+      !navigator.mediaDevices
+        ?.getUserMedia
+    ) {
       setCameraError(
         '현재 브라우저에서 카메라 기능을 지원하지 않습니다.',
       )
@@ -235,32 +276,34 @@ export default function RealtimeInspectionPage() {
 
       try {
         stream =
-          await navigator.mediaDevices.getUserMedia({
-            video: requestedDeviceId
-              ? {
-                  deviceId: {
-                    exact: requestedDeviceId,
+          await navigator.mediaDevices
+            .getUserMedia({
+              video: requestedDeviceId
+                ? {
+                    deviceId: {
+                      exact:
+                        requestedDeviceId,
+                    },
+                    width: {
+                      ideal: 1920,
+                    },
+                    height: {
+                      ideal: 1080,
+                    },
+                  }
+                : {
+                    facingMode: {
+                      ideal: 'environment',
+                    },
+                    width: {
+                      ideal: 1920,
+                    },
+                    height: {
+                      ideal: 1080,
+                    },
                   },
-                  width: {
-                    ideal: 1920,
-                  },
-                  height: {
-                    ideal: 1080,
-                  },
-                }
-              : {
-                  facingMode: {
-                    ideal: 'environment',
-                  },
-                  width: {
-                    ideal: 1920,
-                  },
-                  height: {
-                    ideal: 1080,
-                  },
-                },
-            audio: false,
-          })
+              audio: false,
+            })
       } catch (error) {
         if (
           requestedDeviceId &&
@@ -269,20 +312,22 @@ export default function RealtimeInspectionPage() {
             'OverconstrainedError'
         ) {
           stream =
-            await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: {
-                  ideal: 'environment',
+            await navigator.mediaDevices
+              .getUserMedia({
+                video: {
+                  facingMode: {
+                    ideal:
+                      'environment',
+                  },
+                  width: {
+                    ideal: 1920,
+                  },
+                  height: {
+                    ideal: 1080,
+                  },
                 },
-                width: {
-                  ideal: 1920,
-                },
-                height: {
-                  ideal: 1080,
-                },
-              },
-              audio: false,
-            })
+                audio: false,
+              })
         } else {
           throw error
         }
@@ -294,7 +339,9 @@ export default function RealtimeInspectionPage() {
       ) {
         stream
           .getTracks()
-          .forEach((track) => track.stop())
+          .forEach((track) =>
+            track.stop(),
+          )
 
         return
       }
@@ -302,7 +349,8 @@ export default function RealtimeInspectionPage() {
       streamRef.current = stream
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream
+        videoRef.current.srcObject =
+          stream
 
         await videoRef.current
           .play()
@@ -315,7 +363,9 @@ export default function RealtimeInspectionPage() {
           ?.getSettings().deviceId ?? ''
 
       if (currentDeviceId) {
-        setSelectedCameraId(currentDeviceId)
+        setSelectedCameraId(
+          currentDeviceId,
+        )
       }
 
       setCameraActive(true)
@@ -350,7 +400,9 @@ export default function RealtimeInspectionPage() {
   function releaseCameraStream() {
     streamRef.current
       ?.getTracks()
-      .forEach((track) => track.stop())
+      .forEach((track) =>
+        track.stop(),
+      )
 
     streamRef.current = null
 
@@ -367,14 +419,17 @@ export default function RealtimeInspectionPage() {
   }
 
   async function startAnalysis() {
-    if (!cameraActive || !cameraReady) {
-      setRealtimeError(
+    if (
+      !cameraActive ||
+      !cameraReady
+    ) {
+      setAnalysisError(
         '카메라 영상이 준비된 후 분석을 시작해주세요.',
       )
       return
     }
 
-    setRealtimeError('')
+    setAnalysisError('')
     setLastResult(null)
     setRecentResults([])
     setTotalFrames(0)
@@ -386,7 +441,7 @@ export default function RealtimeInspectionPage() {
       try {
         await connectWebSocket()
       } catch (error) {
-        setRealtimeError(
+        setAnalysisError(
           error instanceof Error
             ? error.message
             : '실시간 분석 서버에 연결하지 못했습니다.',
@@ -420,7 +475,8 @@ export default function RealtimeInspectionPage() {
     }
 
     sendingRef.current = true
-    lastSentAtRef.current = performance.now()
+    lastSentAtRef.current =
+      performance.now()
 
     if (USE_MOCK_ANALYSIS) {
       try {
@@ -428,10 +484,13 @@ export default function RealtimeInspectionPage() {
           ++frameCounterRef.current
 
         await delay(
-          70 + (frameNumber % 4) * 12,
+          70 +
+            (frameNumber % 4) * 12,
         )
 
-        if (!analysisActiveRef.current) {
+        if (
+          !analysisActiveRef.current
+        ) {
           return
         }
 
@@ -461,7 +520,8 @@ export default function RealtimeInspectionPage() {
 
       if (
         !socket ||
-        socket.readyState !== WebSocket.OPEN
+        socket.readyState !==
+          WebSocket.OPEN
       ) {
         throw new Error(
           '실시간 분석 서버 연결이 끊어졌습니다.',
@@ -476,14 +536,14 @@ export default function RealtimeInspectionPage() {
         window.setTimeout(() => {
           sendingRef.current = false
 
-          setRealtimeError(
+          setAnalysisError(
             '분석 서버 응답 시간이 초과되었습니다.',
           )
         }, 3000)
     } catch (error) {
       sendingRef.current = false
 
-      setRealtimeError(
+      setAnalysisError(
         error instanceof Error
           ? error.message
           : '프레임 전송에 실패했습니다.',
@@ -500,18 +560,22 @@ export default function RealtimeInspectionPage() {
       (current) => current + 1,
     )
 
-    setRecentResults((current) => [
-      {
-        ...result,
-        id: crypto.randomUUID(),
-      },
-      ...current,
-    ].slice(0, 6))
+    setRecentResults(
+      (current) =>
+        [
+          {
+            ...result,
+            id: crypto.randomUUID(),
+          },
+          ...current,
+        ].slice(0, 3),
+    )
   }
 
   async function createCurrentFrameBlob() {
     const video = videoRef.current
-    const canvas = captureCanvasRef.current
+    const canvas =
+      captureCanvasRef.current
 
     if (!video || !canvas) {
       throw new Error(
@@ -566,9 +630,13 @@ export default function RealtimeInspectionPage() {
         closeWebSocket()
 
         const socket =
-          new WebSocket(WEBSOCKET_URL)
+          new WebSocket(
+            WEBSOCKET_URL,
+          )
 
-        socket.binaryType = 'arraybuffer'
+        socket.binaryType =
+          'arraybuffer'
+
         socketRef.current = socket
 
         let settled = false
@@ -595,6 +663,7 @@ export default function RealtimeInspectionPage() {
           }
 
           settled = true
+
           window.clearTimeout(
             connectionTimer,
           )
@@ -602,16 +671,19 @@ export default function RealtimeInspectionPage() {
           resolve()
         }
 
-        socket.onmessage = (event) => {
+        socket.onmessage = (
+          event,
+        ) => {
           clearResponseTimer()
           sendingRef.current = false
 
           try {
             if (
-              typeof event.data !== 'string'
+              typeof event.data !==
+              'string'
             ) {
               throw new Error(
-                'JSON 분석 결과가 아닙니다.',
+                'JSON 응답이 아닙니다.',
               )
             }
 
@@ -630,7 +702,7 @@ export default function RealtimeInspectionPage() {
                 ),
             })
           } catch {
-            setRealtimeError(
+            setAnalysisError(
               '분석 서버 응답 형식이 올바르지 않습니다.',
             )
           }
@@ -653,14 +725,18 @@ export default function RealtimeInspectionPage() {
         }
 
         socket.onclose = () => {
-          sendingRef.current = false
           clearResponseTimer()
+          sendingRef.current = false
 
-          if (analysisActiveRef.current) {
-            analysisActiveRef.current = false
+          if (
+            analysisActiveRef.current
+          ) {
+            analysisActiveRef.current =
+              false
+
             setAnalysisActive(false)
 
-            setRealtimeError(
+            setAnalysisError(
               '실시간 분석 서버 연결이 종료되었습니다.',
             )
           }
@@ -670,7 +746,8 @@ export default function RealtimeInspectionPage() {
   }
 
   function closeWebSocket() {
-    const socket = socketRef.current
+    const socket =
+      socketRef.current
 
     if (socket) {
       socket.onclose = null
@@ -681,7 +758,9 @@ export default function RealtimeInspectionPage() {
   }
 
   function clearResponseTimer() {
-    if (responseTimerRef.current !== null) {
+    if (
+      responseTimerRef.current !== null
+    ) {
       window.clearTimeout(
         responseTimerRef.current,
       )
@@ -690,267 +769,327 @@ export default function RealtimeInspectionPage() {
     }
   }
 
-  return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <header className="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold text-[#172a3a]">
-              실시간 영상 검사
-            </h1>
+  async function toggleFullscreen() {
+    const element =
+      inspectionAreaRef.current
 
-            {USE_MOCK_ANALYSIS && (
-              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
-                MOCK ANALYSIS
-              </span>
-            )}
+    if (!element) {
+      return
+    }
+
+    try {
+      if (!document.fullscreenElement) {
+        await element.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch {
+      setAnalysisError(
+        '전체 화면 모드를 실행하지 못했습니다.',
+      )
+    }
+  }
+
+  return (
+    <div className="p-4 sm:p-5 lg:p-6">
+      {!fullscreen && (
+        <header className="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold text-[#172a3a]">
+                실시간 영상 검사
+              </h1>
+
+              {USE_MOCK_ANALYSIS && (
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                  MOCK ANALYSIS
+                </span>
+              )}
+            </div>
+
+            <p className="mt-2 text-[#697d90]">
+              카메라 영상에서 검출 영역과
+              판정 결과를 동시에 확인합니다.
+            </p>
           </div>
 
-          <p className="mt-2 text-[#697d90]">
-            카메라 영상을 분석하여 체결 상태와
-            최종 판정을 실시간으로 표시합니다.
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <select
+              value={selectedCameraId}
+              disabled={
+                cameraDevices.length ===
+                0
+              }
+              onChange={(event) =>
+                void changeCamera(
+                  event.target.value,
+                )
+              }
+              className="h-11 min-w-[180px] rounded-lg border border-[#d9e4ee] bg-white px-3 outline-none focus:border-[#0075c9]"
+            >
+              {cameraDevices.length ===
+                0 && (
+                <option value="">
+                  카메라 검색 중
+                </option>
+              )}
+
+              {cameraDevices.map(
+                (device, index) => (
+                  <option
+                    key={
+                      device.deviceId ||
+                      `camera-${index}`
+                    }
+                    value={
+                      device.deviceId
+                    }
+                  >
+                    {device.label ||
+                      `카메라 ${
+                        index + 1
+                      }`}
+                  </option>
+                ),
+              )}
+            </select>
+
+            <button
+              type="button"
+              onClick={() =>
+                void loadCameraDevices()
+              }
+              className="flex h-11 items-center gap-2 rounded-lg border border-[#d9e4ee] bg-white px-4 font-semibold hover:bg-[#f3f7fb]"
+            >
+              <RefreshCw size={17} />
+              새로고침
+            </button>
+
+            <select
+              value={frameRate}
+              onChange={(event) =>
+                setFrameRate(
+                  Number(
+                    event.target.value,
+                  ),
+                )
+              }
+              className="h-11 rounded-lg border border-[#d9e4ee] bg-white px-3 outline-none focus:border-[#0075c9]"
+            >
+              <option value={1}>
+                분석 1 FPS
+              </option>
+              <option value={2}>
+                분석 2 FPS
+              </option>
+              <option value={5}>
+                분석 5 FPS
+              </option>
+            </select>
+          </div>
+        </header>
+      )}
+
+      {!fullscreen &&
+        (cameraError ||
+          analysisError) && (
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertCircle
+              size={18}
+              className="mt-0.5 shrink-0"
+            />
+
+            <div>
+              {cameraError && (
+                <p>{cameraError}</p>
+              )}
+
+              {analysisError && (
+                <p>{analysisError}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+      <section
+        ref={inspectionAreaRef}
+        className={[
+          'overflow-hidden rounded-xl border border-[#d9e4ee] bg-white',
+          fullscreen
+            ? 'h-screen rounded-none border-0'
+            : 'mt-4',
+        ].join(' ')}
+      >
+        <div
+          className={[
+            'relative overflow-hidden bg-[#081a2a]',
+            fullscreen
+              ? 'h-[calc(100vh-68px)]'
+              : 'h-[calc(100vh-220px)] min-h-[560px]',
+          ].join(' ')}
+        >
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            onLoadedMetadata={() =>
+              setCameraReady(true)
+            }
+            className="h-full w-full object-cover"
+          />
+
+          {lastResult?.detections.map(
+            (detection, index) => (
+              <DetectionOverlay
+                key={`${detection.label}-${index}`}
+                detection={detection}
+              />
+            ),
+          )}
+
+          <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-sm font-bold text-white backdrop-blur-sm">
+            <span
+              className={[
+                'h-2.5 w-2.5 rounded-full',
+                analysisActive
+                  ? 'animate-pulse bg-emerald-400'
+                  : 'bg-slate-400',
+              ].join(' ')}
+            />
+
+            {analysisActive
+              ? `LIVE · 분석 중 · ${frameRate} FPS`
+              : 'LIVE · 분석 대기'}
+          </div>
+
+          {analysisActive && (
+            <div className="pointer-events-none absolute inset-x-0 top-1/2 h-0.5 animate-pulse bg-cyan-400/70 shadow-[0_0_18px_4px_rgba(34,211,238,0.5)]" />
+          )}
+
+          {!cameraActive && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#081a2a] text-slate-300">
+              <VideoOff size={54} />
+
+              <p className="mt-4 text-lg font-semibold">
+                {cameraStarting
+                  ? '카메라 연결 중'
+                  : '카메라가 꺼져 있습니다.'}
+              </p>
+            </div>
+          )}
+
+          <RealtimeOverlay
+            result={lastResult}
+            recentResults={
+              recentResults
+            }
+            analysisActive={
+              analysisActive
+            }
+            totalFrames={totalFrames}
+          />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <select
-            value={selectedCameraId}
+        <div className="flex h-[68px] flex-wrap items-center gap-2 border-t border-[#d9e4ee] bg-[#f8fafc] px-4">
+          <button
+            type="button"
             disabled={
-              cameraDevices.length === 0
+              cameraStarting ||
+              cameraActive
             }
-            onChange={(event) =>
-              void changeCamera(
-                event.target.value,
-              )
+            onClick={() =>
+              void startCamera()
             }
-            className="h-11 min-w-[190px] rounded-lg border border-[#d9e4ee] bg-white px-3 outline-none focus:border-[#0075c9]"
+            className="flex items-center gap-2 rounded-lg border border-[#d9e4ee] bg-white px-4 py-2 font-semibold hover:bg-[#f3f7fb] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {cameraDevices.length === 0 && (
-              <option value="">
-                카메라 검색 중
-              </option>
-            )}
+            <Camera size={17} />
+            카메라 시작
+          </button>
 
-            {cameraDevices.map(
-              (device, index) => (
-                <option
-                  key={
-                    device.deviceId ||
-                    `camera-${index}`
-                  }
-                  value={device.deviceId}
-                >
-                  {device.label ||
-                    `카메라 ${index + 1}`}
-                </option>
-              ),
-            )}
-          </select>
+          <button
+            type="button"
+            disabled={
+              !cameraActive ||
+              !cameraReady ||
+              analysisActive
+            }
+            onClick={() =>
+              void startAnalysis()
+            }
+            className="flex items-center gap-2 rounded-lg bg-[#0075c9] px-4 py-2 font-semibold text-white hover:bg-[#0065ad] disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
+            <Play size={17} />
+            분석 시작
+          </button>
+
+          <button
+            type="button"
+            disabled={!analysisActive}
+            onClick={stopAnalysis}
+            className="flex items-center gap-2 rounded-lg bg-[#263746] px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Square size={15} />
+            분석 중지
+          </button>
+
+          <button
+            type="button"
+            disabled={!cameraActive}
+            onClick={stopCamera}
+            className="rounded-lg border border-[#d9e4ee] bg-white px-4 py-2 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            카메라 종료
+          </button>
+
+          <div className="hidden items-center gap-5 text-xs text-[#697d90] xl:flex">
+            <span>
+              해상도 1920 × 1080
+            </span>
+
+            <span>
+              전송 640 × 360 JPEG
+            </span>
+
+            <span className="flex items-center gap-1.5">
+              <Wifi size={15} />
+              {USE_MOCK_ANALYSIS
+                ? 'Mock 분석'
+                : '서버 연결'}
+            </span>
+          </div>
 
           <button
             type="button"
             onClick={() =>
-              void loadCameraDevices()
+              void toggleFullscreen()
             }
-            className="flex h-11 items-center gap-2 rounded-lg border border-[#d9e4ee] bg-white px-4 font-semibold hover:bg-[#f3f7fb]"
+            className="ml-auto flex items-center gap-2 rounded-lg border border-[#d9e4ee] bg-white px-4 py-2 font-semibold hover:bg-[#f3f7fb]"
           >
-            <RefreshCw size={17} />
-            새로고침
+            <Expand size={17} />
+            {fullscreen
+              ? '전체 화면 종료'
+              : '전체 화면'}
           </button>
-
-          <select
-            value={frameRate}
-            onChange={(event) =>
-              setFrameRate(
-                Number(event.target.value),
-              )
-            }
-            className="h-11 rounded-lg border border-[#d9e4ee] bg-white px-3 outline-none focus:border-[#0075c9]"
-          >
-            <option value={1}>분석 1 FPS</option>
-            <option value={2}>분석 2 FPS</option>
-            <option value={5}>분석 5 FPS</option>
-          </select>
         </div>
-      </header>
 
-      {(cameraError || realtimeError) && (
-        <div className="mt-5 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <AlertCircle
-            size={18}
-            className="mt-0.5 shrink-0"
-          />
-
-          <div>
-            {cameraError && (
-              <p>{cameraError}</p>
-            )}
-
-            {realtimeError && (
-              <p>{realtimeError}</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="overflow-hidden rounded-xl border border-[#d9e4ee] bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e9f0] px-5 py-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-lg font-bold">
-                카메라 영상
-              </h2>
-
-              <StatusBadge
-                active={cameraActive}
-                activeLabel="카메라 연결"
-                inactiveLabel="카메라 미연결"
-              />
-
-              <StatusBadge
-                active={analysisActive}
-                activeLabel="실시간 분석 중"
-                inactiveLabel="분석 대기"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-[#697d90]">
-              {analysisActive ? (
-                <Wifi
-                  size={17}
-                  className="text-emerald-600"
-                />
-              ) : (
-                <ScanLine size={17} />
-              )}
-
-              누적 분석 {totalFrames}프레임
-            </div>
-          </div>
-
-          <div className="relative aspect-video overflow-hidden bg-[#081a2a]">
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              onLoadedMetadata={() =>
-                setCameraReady(true)
-              }
-              className="h-full w-full object-cover"
-            />
-
-            {lastResult?.detections.map(
-              (detection, index) => (
-                <DetectionOverlay
-                  key={`${detection.label}-${index}`}
-                  detection={detection}
-                />
-              ),
-            )}
-
-            {analysisActive && (
-              <div className="pointer-events-none absolute inset-x-0 top-1/2 h-0.5 animate-pulse bg-cyan-400/80 shadow-[0_0_18px_4px_rgba(34,211,238,0.55)]" />
-            )}
-
-            {!cameraActive && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#081a2a] text-slate-300">
-                <VideoOff size={50} />
-
-                <p className="mt-4">
-                  {cameraStarting
-                    ? '카메라 연결 중'
-                    : '카메라가 꺼져 있습니다.'}
-                </p>
-              </div>
-            )}
-
-            <div className="absolute bottom-4 left-4 rounded-lg bg-black/65 px-3 py-2 text-xs text-white">
-              {USE_MOCK_ANALYSIS
-                ? 'Mock 실시간 분석'
-                : 'Vision Service 실시간 분석'}
-              {' · '}
-              {frameRate} FPS
-            </div>
-          </div>
-
-          <canvas
-            ref={captureCanvasRef}
-            className="hidden"
-          />
-
-          <div className="flex flex-wrap gap-3 p-5">
-            <button
-              type="button"
-              disabled={
-                cameraStarting || cameraActive
-              }
-              onClick={() =>
-                void startCamera()
-              }
-              className="flex items-center gap-2 rounded-lg border border-[#d9e4ee] bg-white px-5 py-3 font-semibold hover:bg-[#f3f7fb] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Camera size={18} />
-              카메라 시작
-            </button>
-
-            <button
-              type="button"
-              disabled={
-                !cameraActive ||
-                !cameraReady ||
-                analysisActive
-              }
-              onClick={() =>
-                void startAnalysis()
-              }
-              className="flex items-center gap-2 rounded-lg bg-[#0075c9] px-5 py-3 font-semibold text-white hover:bg-[#0065ad] disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              <Play size={18} />
-              실시간 분석 시작
-            </button>
-
-            <button
-              type="button"
-              disabled={!analysisActive}
-              onClick={stopAnalysis}
-              className="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-5 py-3 font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Square size={16} />
-              분석 중지
-            </button>
-
-            <button
-              type="button"
-              disabled={!cameraActive}
-              onClick={stopCamera}
-              className="rounded-lg border border-[#d9e4ee] bg-white px-5 py-3 font-semibold hover:bg-[#f3f7fb] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              카메라 종료
-            </button>
-          </div>
-        </section>
-
-        <RealtimeResultPanel
-          result={lastResult}
-          analysisActive={analysisActive}
-          totalFrames={totalFrames}
+        <canvas
+          ref={captureCanvasRef}
+          className="hidden"
         />
-      </div>
-
-      <RecentResultsTable
-        results={recentResults}
-      />
+      </section>
     </div>
   )
 }
 
-function RealtimeResultPanel({
+function RealtimeOverlay({
   result,
+  recentResults,
   analysisActive,
   totalFrames,
 }: {
   result: RealtimeAnalysisResult | null
+  recentResults: RecentResult[]
   analysisActive: boolean
   totalFrames: number
 }) {
@@ -958,92 +1097,160 @@ function RealtimeResultPanel({
     result?.finalResult === 'PASS'
 
   return (
-    <aside className="h-fit rounded-xl border border-[#d9e4ee] bg-white p-5">
+    <aside className="absolute bottom-4 left-4 right-4 max-h-[48%] overflow-y-auto rounded-xl border border-white/20 bg-[#102438]/90 p-5 text-white shadow-2xl backdrop-blur-md md:bottom-auto md:left-auto md:right-5 md:top-5 md:w-[330px] md:max-h-[calc(100%-40px)]">
       <h2 className="text-xl font-bold">
         실시간 검사 결과
       </h2>
 
-      {!result ? (
-        <div className="mt-5 rounded-lg border border-[#dce6ef] bg-[#f3f7fb] p-5">
-          <p className="font-bold">
-            {analysisActive
-              ? '첫 분석 결과를 기다리고 있습니다.'
-              : '분석 대기 중입니다.'}
-          </p>
+      <div className="mt-4 border-t border-white/15 pt-4">
+        {!result ? (
+          <div className="flex min-h-[180px] flex-col items-center justify-center text-center text-slate-300">
+            <ScanLine size={38} />
 
-          <p className="mt-2 text-sm text-[#697d90]">
-            카메라를 연결하고 실시간 분석을
-            시작해주세요.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div
-            className={[
-              'mt-5 rounded-xl border p-5',
-              normal
-                ? 'border-emerald-200 bg-emerald-50'
-                : 'border-red-200 bg-red-50',
-            ].join(' ')}
-          >
-            <p className="text-sm text-[#697d90]">
-              현재 프레임 판정
+            <p className="mt-4 font-semibold">
+              {analysisActive
+                ? '첫 분석 결과를 기다리는 중'
+                : '분석 시작 전'}
             </p>
 
-            <p
-              className={[
-                'mt-2 text-5xl font-extrabold',
-                normal
-                  ? 'text-emerald-600'
-                  : 'text-red-500',
-              ].join(' ')}
-            >
-              {normal ? 'OK' : 'NG'}
-            </p>
-
-            <p className="mt-3 text-sm text-[#697d90]">
-              신뢰도{' '}
-              {(
-                result.confidence * 100
-              ).toFixed(1)}
-              %
+            <p className="mt-2 text-xs">
+              실시간 분석을 시작하면 판정
+              결과가 표시됩니다.
             </p>
           </div>
+        ) : (
+          <>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-xs text-slate-300">
+                  최종 판정
+                </p>
 
-          <div className="mt-6">
-            <ResultRow
-              label="조립 순서"
-              result={result.assemblyResult}
-            />
+                <p
+                  className={[
+                    'mt-1 text-6xl font-extrabold',
+                    normal
+                      ? 'text-white'
+                      : 'text-red-400',
+                  ].join(' ')}
+                >
+                  {normal ? 'OK' : 'NG'}
+                </p>
+              </div>
 
-            <ResultRow
-              label="체결 상태"
-              result={result.fasteningResult}
-            />
+              <span
+                className={[
+                  'rounded-full px-4 py-2 text-sm font-bold',
+                  normal
+                    ? 'bg-white text-[#172a3a]'
+                    : 'bg-red-500 text-white',
+                ].join(' ')}
+              >
+                {(
+                  result.confidence * 100
+                ).toFixed(1)}
+                %
+              </span>
+            </div>
 
-            <InformationRow
-              label="분석 지연시간"
-              value={`${result.latencyMs} ms`}
-            />
+            <div className="mt-5 divide-y divide-white/10">
+              <OverlayRow
+                label="조립 순서"
+                value={
+                  result.assemblyResult ===
+                  'PASS'
+                    ? '정상'
+                    : '불량'
+                }
+                failure={
+                  result.assemblyResult ===
+                  'FAIL'
+                }
+              />
 
-            <InformationRow
-              label="분석 프레임"
-              value={`${totalFrames}회`}
-            />
+              <OverlayRow
+                label="체결 상태"
+                value={
+                  result.fasteningResult ===
+                  'PASS'
+                    ? '정상'
+                    : '불량'
+                }
+                failure={
+                  result.fasteningResult ===
+                  'FAIL'
+                }
+              />
 
-            <InformationRow
-              label="마지막 분석"
-              value={formatTime(
-                result.timestamp,
-              )}
-            />
-          </div>
-        </>
-      )}
+              <OverlayRow
+                label="부품 감지"
+                value={`${result.detections.length}개`}
+              />
+            </div>
 
-      <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
-        Mock 모드의 결과는 UI 확인용이며 실제 모델
-        판정값이 아닙니다.
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <OverlayMetric
+                label="분석 지연시간"
+                value={`${result.latencyMs} ms`}
+              />
+
+              <OverlayMetric
+                label="누적 프레임"
+                value={totalFrames.toLocaleString()}
+              />
+            </div>
+
+            <div className="mt-5 rounded-lg border border-white/15 bg-black/20 p-4">
+              <p className="text-xs text-slate-300">
+                최근 판정
+              </p>
+
+              <div className="mt-3 space-y-2">
+                {recentResults.map(
+                  (recent) => (
+                    <div
+                      key={recent.id}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <span>
+                        {formatTime(
+                          recent.timestamp,
+                        )}
+                      </span>
+
+                      <strong
+                        className={
+                          recent.finalResult ===
+                          'PASS'
+                            ? 'text-emerald-300'
+                            : 'text-red-300'
+                        }
+                      >
+                        {recent.finalResult ===
+                        'PASS'
+                          ? 'OK'
+                          : 'NG'}
+                        {' · '}
+                        {(
+                          recent.confidence *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </strong>
+                    </div>
+                  ),
+                )}
+
+                {recentResults.length ===
+                  0 && (
+                  <p className="text-xs text-slate-400">
+                    판정 기록 없음
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </aside>
   )
@@ -1060,7 +1267,7 @@ function DetectionOverlay({
   return (
     <div
       className={[
-        'pointer-events-none absolute border-2',
+        'pointer-events-none absolute border-[3px]',
         normal
           ? 'border-emerald-400'
           : 'border-red-500',
@@ -1074,7 +1281,7 @@ function DetectionOverlay({
     >
       <span
         className={[
-          'absolute -top-7 left-[-2px] whitespace-nowrap px-2 py-1 text-xs font-bold text-white',
+          'absolute -top-7 left-[-3px] whitespace-nowrap px-2 py-1 text-xs font-bold text-white',
           normal
             ? 'bg-emerald-500'
             : 'bg-red-500',
@@ -1090,145 +1297,35 @@ function DetectionOverlay({
   )
 }
 
-function RecentResultsTable({
-  results,
-}: {
-  results: RecentResult[]
-}) {
-  return (
-    <section className="mt-6 rounded-xl border border-[#d9e4ee] bg-white p-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">
-          최근 실시간 판정
-        </h2>
-
-        <span className="text-sm text-[#697d90]">
-          최근 {results.length}건
-        </span>
-      </div>
-
-      {results.length === 0 ? (
-        <p className="mt-5 text-sm text-[#697d90]">
-          아직 분석된 프레임이 없습니다.
-        </p>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[680px] text-left text-sm">
-            <thead className="bg-[#edf3f8] text-[#52697d]">
-              <tr>
-                <th className="px-4 py-3">
-                  분석 시각
-                </th>
-                <th className="px-4 py-3">
-                  조립 순서
-                </th>
-                <th className="px-4 py-3">
-                  체결 상태
-                </th>
-                <th className="px-4 py-3">
-                  신뢰도
-                </th>
-                <th className="px-4 py-3">
-                  지연시간
-                </th>
-                <th className="px-4 py-3">
-                  최종 판정
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {results.map((result) => (
-                <tr
-                  key={result.id}
-                  className="border-b border-[#e1e9f0]"
-                >
-                  <td className="px-4 py-3">
-                    {formatTime(
-                      result.timestamp,
-                    )}
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <ResultText
-                      result={
-                        result.assemblyResult
-                      }
-                    />
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <ResultText
-                      result={
-                        result.fasteningResult
-                      }
-                    />
-                  </td>
-
-                  <td className="px-4 py-3">
-                    {(
-                      result.confidence * 100
-                    ).toFixed(1)}
-                    %
-                  </td>
-
-                  <td className="px-4 py-3">
-                    {result.latencyMs} ms
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <ResultText
-                      result={
-                        result.finalResult
-                      }
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  )
-}
-
-function ResultRow({
+function OverlayRow({
   label,
-  result,
+  value,
+  failure = false,
 }: {
   label: string
-  result: CheckResult
+  value: string
+  failure?: boolean
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-[#e1e9f0] py-4">
-      <span>{label}</span>
-      <ResultText result={result} />
+    <div className="flex items-center justify-between py-3 text-sm">
+      <span className="text-slate-300">
+        {label}
+      </span>
+
+      <strong
+        className={
+          failure
+            ? 'text-red-300'
+            : 'text-white'
+        }
+      >
+        {value}
+      </strong>
     </div>
   )
 }
 
-function ResultText({
-  result,
-}: {
-  result: CheckResult
-}) {
-  const normal = result === 'PASS'
-
-  return (
-    <strong
-      className={
-        normal
-          ? 'text-emerald-600'
-          : 'text-red-500'
-      }
-    >
-      {normal ? '정상' : '불량'}
-    </strong>
-  )
-}
-
-function InformationRow({
+function OverlayMetric({
   label,
   value,
 }: {
@@ -1236,33 +1333,15 @@ function InformationRow({
   value: string
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-[#e1e9f0] py-4">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  )
-}
+    <div>
+      <p className="text-xs text-slate-300">
+        {label}
+      </p>
 
-function StatusBadge({
-  active,
-  activeLabel,
-  inactiveLabel,
-}: {
-  active: boolean
-  activeLabel: string
-  inactiveLabel: string
-}) {
-  return (
-    <span
-      className={[
-        'rounded-full px-3 py-1 text-xs font-semibold',
-        active
-          ? 'bg-emerald-100 text-emerald-700'
-          : 'bg-slate-100 text-slate-600',
-      ].join(' ')}
-    >
-      {active ? activeLabel : inactiveLabel}
-    </span>
+      <p className="mt-1 text-xl font-bold">
+        {value}
+      </p>
+    </div>
   )
 }
 
@@ -1293,26 +1372,27 @@ function createMockResult(
       ? 'FAIL'
       : 'PASS',
     confidence:
-      0.91 + (frameNumber % 7) * 0.01,
+      0.91 +
+      (frameNumber % 7) * 0.01,
     latencyMs,
     timestamp: new Date().toISOString(),
     detections: [
       {
         label: 'BOLT',
-        confidence: 0.96,
-        x: 0.31 + movement,
-        y: 0.18,
+        confidence: 0.97,
+        x: 0.30 + movement,
+        y: 0.17,
         width: 0.19,
-        height: 0.55,
+        height: 0.56,
         result: assemblyFail
           ? 'FAIL'
           : 'PASS',
       },
       {
         label: 'WASHER',
-        confidence: 0.93,
-        x: 0.46 + movement,
-        y: 0.47,
+        confidence: 0.94,
+        x: 0.43 + movement,
+        y: 0.46,
         width: 0.15,
         height: 0.14,
         result: assemblyFail
@@ -1321,8 +1401,8 @@ function createMockResult(
       },
       {
         label: 'NUT',
-        confidence: 0.94,
-        x: 0.52 + movement,
+        confidence: 0.95,
+        x: 0.51 + movement,
         y: 0.25,
         width: 0.17,
         height: 0.25,
@@ -1335,11 +1415,14 @@ function createMockResult(
 }
 
 function formatTime(value: string) {
-  return new Intl.DateTimeFormat('ko-KR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(new Date(value))
+  return new Intl.DateTimeFormat(
+    'ko-KR',
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    },
+  ).format(new Date(value))
 }
 
 function delay(milliseconds: number) {
