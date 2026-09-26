@@ -1,0 +1,6 @@
+com\vision\inspection\rule\InspectionRuleEngineTest.class
+com\vision\inspection\storage\ImageValidatorTest.class
+com\vision\inspection\storage\ProcessedImageRendererTest.class
+com\vision\inspection\vision\YoloInferenceServiceTest.class
+com\vision\inspection\InspectionApiTest.class
+com\vision\inspection\storage\LocalImageStorageServiceTest.class

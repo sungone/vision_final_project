@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.vision.inspection.InspectionApiTest" time="7.987" tests="12" errors="0" skipped="0" failures="0" flakes="0">
+  <properties>
+    <property name="java.specification.version" value="25"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="MS949"/>
+    <property name="java.class.path" value="C:\project\vision_final_project\backend\target\test-classes;C:\project\vision_final_project\backend\target\classes;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-web\3.5.16\spring-boot-starter-web-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter\3.5.16\spring-boot-starter-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot\3.5.16\spring-boot-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-autoconfigure\3.5.16\spring-boot-autoconfigure-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-logging\3.5.16\spring-boot-starter-logging-3.5.16.jar;C:\project\vision_final_project\.tools\m2\ch\qos\logback\logback-classic\1.5.34\logback-classic-1.5.34.jar;C:\project\vision_final_project\.tools\m2\ch\qos\logback\logback-core\1.5.34\logback-core-1.5.34.jar;C:\project\vision_final_project\.tools\m2\org\apache\logging\log4j\log4j-to-slf4j\2.24.3\log4j-to-slf4j-2.24.3.jar;C:\project\vision_final_project\.tools\m2\org\apache\logging\log4j\log4j-api\2.24.3\log4j-api-2.24.3.jar;C:\project\vision_final_project\.tools\m2\org\slf4j\jul-to-slf4j\2.0.18\jul-to-slf4j-2.0.18.jar;C:\project\vision_final_project\.tools\m2\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\project\vision_final_project\.tools\m2\org\yaml\snakeyaml\2.4\snakeyaml-2.4.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-json\3.5.16\spring-boot-starter-json-3.5.16.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\core\jackson-databind\2.21.4\jackson-databind-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.21.4\jackson-datatype-jdk8-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\module\jackson-module-parameter-names\2.21.4\jackson-module-parameter-names-2.21.4.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-tomcat\3.5.16\spring-boot-starter-tomcat-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\apache\tomcat\embed\tomcat-embed-core\10.1.55\tomcat-embed-core-10.1.55.jar;C:\project\vision_final_project\.tools\m2\org\apache\tomcat\embed\tomcat-embed-websocket\10.1.55\tomcat-embed-websocket-10.1.55.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-web\6.2.19\spring-web-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-beans\6.2.19\spring-beans-6.2.19.jar;C:\project\vision_final_project\.tools\m2\io\micrometer\micrometer-observation\1.15.12\micrometer-observation-1.15.12.jar;C:\project\vision_final_project\.tools\m2\io\micrometer\micrometer-commons\1.15.12\micrometer-commons-1.15.12.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-webmvc\6.2.19\spring-webmvc-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-aop\6.2.19\spring-aop-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-context\6.2.19\spring-context-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-expression\6.2.19\spring-expression-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-validation\3.5.16\spring-boot-starter-validation-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\apache\tomcat\embed\tomcat-embed-el\10.1.55\tomcat-embed-el-10.1.55.jar;C:\project\vision_final_project\.tools\m2\org\hibernate\validator\hibernate-validator\8.0.3.Final\hibernate-validator-8.0.3.Final.jar;C:\project\vision_final_project\.tools\m2\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\project\vision_final_project\.tools\m2\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\classmate\1.7.3\classmate-1.7.3.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-jdbc\3.5.16\spring-boot-starter-jdbc-3.5.16.jar;C:\project\vision_final_project\.tools\m2\com\zaxxer\HikariCP\6.3.3\HikariCP-6.3.3.jar;C:\project\vision_final_project\.tools\m2\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-jdbc\6.2.19\spring-jdbc-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-tx\6.2.19\spring-tx-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\flywaydb\flyway-core\11.7.2\flyway-core-11.7.2.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\dataformat\jackson-dataformat-toml\2.21.4\jackson-dataformat-toml-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\core\jackson-core\2.21.4\jackson-core-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.21.4\jackson-datatype-jsr310-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\core\jackson-annotations\2.21\jackson-annotations-2.21.jar;C:\project\vision_final_project\.tools\m2\org\flywaydb\flyway-database-postgresql\11.7.2\flyway-database-postgresql-11.7.2.jar;C:\project\vision_final_project\.tools\m2\org\postgresql\postgresql\42.7.11\postgresql-42.7.11.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-test\3.5.16\spring-boot-starter-test-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-test\3.5.16\spring-boot-test-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-test-autoconfigure\3.5.16\spring-boot-test-autoconfigure-3.5.16.jar;C:\project\vision_final_project\.tools\m2\com\jayway\jsonpath\json-path\2.9.0\json-path-2.9.0.jar;C:\project\vision_final_project\.tools\m2\jakarta\xml\bind\jakarta.xml.bind-api\4.0.5\jakarta.xml.bind-api-4.0.5.jar;C:\project\vision_final_project\.tools\m2\jakarta\activation\jakarta.activation-api\2.1.4\jakarta.activation-api-2.1.4.jar;C:\project\vision_final_project\.tools\m2\net\minidev\json-smart\2.5.2\json-smart-2.5.2.jar;C:\project\vision_final_project\.tools\m2\net\minidev\accessors-smart\2.5.2\accessors-smart-2.5.2.jar;C:\project\vision_final_project\.tools\m2\org\ow2\asm\asm\9.7.1\asm-9.7.1.jar;C:\project\vision_final_project\.tools\m2\org\assertj\assertj-core\3.27.7\assertj-core-3.27.7.jar;C:\project\vision_final_project\.tools\m2\net\bytebuddy\byte-buddy\1.17.8\byte-buddy-1.17.8.jar;C:\project\vision_final_project\.tools\m2\org\awaitility\awaitility\4.2.2\awaitility-4.2.2.jar;C:\project\vision_final_project\.tools\m2\org\hamcrest\hamcrest\3.0\hamcrest-3.0.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter\5.12.2\junit-jupiter-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter-api\5.12.2\junit-jupiter-api-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\project\vision_final_project\.tools\m2\org\junit\platform\junit-platform-commons\1.12.2\junit-platform-commons-1.12.2.jar;C:\project\vision_final_project\.tools\m2\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter-params\5.12.2\junit-jupiter-params-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter-engine\5.12.2\junit-jupiter-engine-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\platform\junit-platform-engine\1.12.2\junit-platform-engine-1.12.2.jar;C:\project\vision_final_project\.tools\m2\org\mockito\mockito-core\5.17.0\mockito-core-5.17.0.jar;C:\project\vision_final_project\.tools\m2\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar;C:\project\vision_final_project\.tools\m2\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\project\vision_final_project\.tools\m2\org\mockito\mockito-junit-jupiter\5.17.0\mockito-junit-jupiter-5.17.0.jar;C:\project\vision_final_project\.tools\m2\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;C:\project\vision_final_project\.tools\m2\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-core\6.2.19\spring-core-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-jcl\6.2.19\spring-jcl-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-test\6.2.19\spring-test-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\xmlunit\xmlunit-core\2.10.4\xmlunit-core-2.10.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\postgresql\1.21.4\postgresql-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\jdbc\1.21.4\jdbc-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\database-commons\1.21.4\database-commons-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\junit-jupiter\1.21.4\junit-jupiter-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\testcontainers\1.21.4\testcontainers-1.21.4.jar;C:\project\vision_final_project\.tools\m2\junit\junit\4.13.2\junit-4.13.2.jar;C:\project\vision_final_project\.tools\m2\org\hamcrest\hamcrest-core\3.0\hamcrest-core-3.0.jar;C:\project\vision_final_project\.tools\m2\org\apache\commons\commons-compress\1.24.0\commons-compress-1.24.0.jar;C:\project\vision_final_project\.tools\m2\org\rnorth\duct-tape\duct-tape\1.0.8\duct-tape-1.0.8.jar;C:\project\vision_final_project\.tools\m2\org\jetbrains\annotations\17.0.0\annotations-17.0.0.jar;C:\project\vision_final_project\.tools\m2\com\github\docker-java\docker-java-api\3.4.2\docker-java-api-3.4.2.jar;C:\project\vision_final_project\.tools\m2\com\github\docker-java\docker-java-transport-zerodep\3.4.2\docker-java-transport-zerodep-3.4.2.jar;C:\project\vision_final_project\.tools\m2\com\github\docker-java\docker-java-transport\3.4.2\docker-java-transport-3.4.2.jar;C:\project\vision_final_project\.tools\m2\net\java\dev\jna\jna\5.13.0\jna-5.13.0.jar;"/>
+    <property name="java.vm.vendor" value="JetBrains s.r.o."/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://www.jetbrains.com/"/>
+    <property name="user.timezone" value="Asia/Seoul"/>
+    <property name="swing.bufferPerWindow" value="false"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="25"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="KR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\JetBrains\IntelliJ IDEA 2026.2.1\jbr\bin"/>
+    <property name="sun.java.command" value="C:\Temp\surefire6060850523601438164\surefirebooter-20260922151506017_3.jar C:\Temp\surefire6060850523601438164 2026-09-22T15-15-05_920-jvmRun1 surefire-20260922151506017_1tmp surefire_0-20260922151506017_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\project\vision_final_project\backend\target\test-classes;C:\project\vision_final_project\backend\target\classes;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-web\3.5.16\spring-boot-starter-web-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter\3.5.16\spring-boot-starter-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot\3.5.16\spring-boot-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-autoconfigure\3.5.16\spring-boot-autoconfigure-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-logging\3.5.16\spring-boot-starter-logging-3.5.16.jar;C:\project\vision_final_project\.tools\m2\ch\qos\logback\logback-classic\1.5.34\logback-classic-1.5.34.jar;C:\project\vision_final_project\.tools\m2\ch\qos\logback\logback-core\1.5.34\logback-core-1.5.34.jar;C:\project\vision_final_project\.tools\m2\org\apache\logging\log4j\log4j-to-slf4j\2.24.3\log4j-to-slf4j-2.24.3.jar;C:\project\vision_final_project\.tools\m2\org\apache\logging\log4j\log4j-api\2.24.3\log4j-api-2.24.3.jar;C:\project\vision_final_project\.tools\m2\org\slf4j\jul-to-slf4j\2.0.18\jul-to-slf4j-2.0.18.jar;C:\project\vision_final_project\.tools\m2\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\project\vision_final_project\.tools\m2\org\yaml\snakeyaml\2.4\snakeyaml-2.4.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-json\3.5.16\spring-boot-starter-json-3.5.16.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\core\jackson-databind\2.21.4\jackson-databind-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.21.4\jackson-datatype-jdk8-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\module\jackson-module-parameter-names\2.21.4\jackson-module-parameter-names-2.21.4.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-tomcat\3.5.16\spring-boot-starter-tomcat-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\apache\tomcat\embed\tomcat-embed-core\10.1.55\tomcat-embed-core-10.1.55.jar;C:\project\vision_final_project\.tools\m2\org\apache\tomcat\embed\tomcat-embed-websocket\10.1.55\tomcat-embed-websocket-10.1.55.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-web\6.2.19\spring-web-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-beans\6.2.19\spring-beans-6.2.19.jar;C:\project\vision_final_project\.tools\m2\io\micrometer\micrometer-observation\1.15.12\micrometer-observation-1.15.12.jar;C:\project\vision_final_project\.tools\m2\io\micrometer\micrometer-commons\1.15.12\micrometer-commons-1.15.12.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-webmvc\6.2.19\spring-webmvc-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-aop\6.2.19\spring-aop-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-context\6.2.19\spring-context-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-expression\6.2.19\spring-expression-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-validation\3.5.16\spring-boot-starter-validation-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\apache\tomcat\embed\tomcat-embed-el\10.1.55\tomcat-embed-el-10.1.55.jar;C:\project\vision_final_project\.tools\m2\org\hibernate\validator\hibernate-validator\8.0.3.Final\hibernate-validator-8.0.3.Final.jar;C:\project\vision_final_project\.tools\m2\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\project\vision_final_project\.tools\m2\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\classmate\1.7.3\classmate-1.7.3.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-jdbc\3.5.16\spring-boot-starter-jdbc-3.5.16.jar;C:\project\vision_final_project\.tools\m2\com\zaxxer\HikariCP\6.3.3\HikariCP-6.3.3.jar;C:\project\vision_final_project\.tools\m2\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-jdbc\6.2.19\spring-jdbc-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-tx\6.2.19\spring-tx-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\flywaydb\flyway-core\11.7.2\flyway-core-11.7.2.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\dataformat\jackson-dataformat-toml\2.21.4\jackson-dataformat-toml-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\core\jackson-core\2.21.4\jackson-core-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.21.4\jackson-datatype-jsr310-2.21.4.jar;C:\project\vision_final_project\.tools\m2\com\fasterxml\jackson\core\jackson-annotations\2.21\jackson-annotations-2.21.jar;C:\project\vision_final_project\.tools\m2\org\flywaydb\flyway-database-postgresql\11.7.2\flyway-database-postgresql-11.7.2.jar;C:\project\vision_final_project\.tools\m2\org\postgresql\postgresql\42.7.11\postgresql-42.7.11.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-starter-test\3.5.16\spring-boot-starter-test-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-test\3.5.16\spring-boot-test-3.5.16.jar;C:\project\vision_final_project\.tools\m2\org\springframework\boot\spring-boot-test-autoconfigure\3.5.16\spring-boot-test-autoconfigure-3.5.16.jar;C:\project\vision_final_project\.tools\m2\com\jayway\jsonpath\json-path\2.9.0\json-path-2.9.0.jar;C:\project\vision_final_project\.tools\m2\jakarta\xml\bind\jakarta.xml.bind-api\4.0.5\jakarta.xml.bind-api-4.0.5.jar;C:\project\vision_final_project\.tools\m2\jakarta\activation\jakarta.activation-api\2.1.4\jakarta.activation-api-2.1.4.jar;C:\project\vision_final_project\.tools\m2\net\minidev\json-smart\2.5.2\json-smart-2.5.2.jar;C:\project\vision_final_project\.tools\m2\net\minidev\accessors-smart\2.5.2\accessors-smart-2.5.2.jar;C:\project\vision_final_project\.tools\m2\org\ow2\asm\asm\9.7.1\asm-9.7.1.jar;C:\project\vision_final_project\.tools\m2\org\assertj\assertj-core\3.27.7\assertj-core-3.27.7.jar;C:\project\vision_final_project\.tools\m2\net\bytebuddy\byte-buddy\1.17.8\byte-buddy-1.17.8.jar;C:\project\vision_final_project\.tools\m2\org\awaitility\awaitility\4.2.2\awaitility-4.2.2.jar;C:\project\vision_final_project\.tools\m2\org\hamcrest\hamcrest\3.0\hamcrest-3.0.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter\5.12.2\junit-jupiter-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter-api\5.12.2\junit-jupiter-api-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\project\vision_final_project\.tools\m2\org\junit\platform\junit-platform-commons\1.12.2\junit-platform-commons-1.12.2.jar;C:\project\vision_final_project\.tools\m2\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter-params\5.12.2\junit-jupiter-params-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\jupiter\junit-jupiter-engine\5.12.2\junit-jupiter-engine-5.12.2.jar;C:\project\vision_final_project\.tools\m2\org\junit\platform\junit-platform-engine\1.12.2\junit-platform-engine-1.12.2.jar;C:\project\vision_final_project\.tools\m2\org\mockito\mockito-core\5.17.0\mockito-core-5.17.0.jar;C:\project\vision_final_project\.tools\m2\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar;C:\project\vision_final_project\.tools\m2\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\project\vision_final_project\.tools\m2\org\mockito\mockito-junit-jupiter\5.17.0\mockito-junit-jupiter-5.17.0.jar;C:\project\vision_final_project\.tools\m2\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;C:\project\vision_final_project\.tools\m2\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-core\6.2.19\spring-core-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-jcl\6.2.19\spring-jcl-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\springframework\spring-test\6.2.19\spring-test-6.2.19.jar;C:\project\vision_final_project\.tools\m2\org\xmlunit\xmlunit-core\2.10.4\xmlunit-core-2.10.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\postgresql\1.21.4\postgresql-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\jdbc\1.21.4\jdbc-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\database-commons\1.21.4\database-commons-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\junit-jupiter\1.21.4\junit-jupiter-1.21.4.jar;C:\project\vision_final_project\.tools\m2\org\testcontainers\testcontainers\1.21.4\testcontainers-1.21.4.jar;C:\project\vision_final_project\.tools\m2\junit\junit\4.13.2\junit-4.13.2.jar;C:\project\vision_final_project\.tools\m2\org\hamcrest\hamcrest-core\3.0\hamcrest-core-3.0.jar;C:\project\vision_final_project\.tools\m2\org\apache\commons\commons-compress\1.24.0\commons-compress-1.24.0.jar;C:\project\vision_final_project\.tools\m2\org\rnorth\duct-tape\duct-tape\1.0.8\duct-tape-1.0.8.jar;C:\project\vision_final_project\.tools\m2\org\jetbrains\annotations\17.0.0\annotations-17.0.0.jar;C:\project\vision_final_project\.tools\m2\com\github\docker-java\docker-java-api\3.4.2\docker-java-api-3.4.2.jar;C:\project\vision_final_project\.tools\m2\com\github\docker-java\docker-java-transport-zerodep\3.4.2\docker-java-transport-zerodep-3.4.2.jar;C:\project\vision_final_project\.tools\m2\com\github\docker-java\docker-java-transport\3.4.2\docker-java-transport-3.4.2.jar;C:\project\vision_final_project\.tools\m2\net\java\dev\jna\jna\5.13.0\jna-5.13.0.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\한국전파진흥협회"/>
+    <property name="user.language" value="ko"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2026-04-21"/>
+    <property name="java.home" value="C:\Program Files\JetBrains\IntelliJ IDEA 2026.2.1\jbr"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\project\vision_final_project\backend"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="intellij.os.virtualization" value="none"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
+    <property name="jbr.virtualization.information" value="Hyper-V role"/>
+    <property name="surefire.real.class.path" value="C:\Temp\surefire6060850523601438164\surefirebooter-20260922151506017_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="polyglot.engine.WarnInterpreterOnly" value="false"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="25.0.3+9-b508.16"/>
+    <property name="user.name" value="한국전파진흥협회"/>
+    <property name="stdout.encoding" value="MS949"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="JBR-25.0.3+9-508.16-nomod"/>
+    <property name="localRepository" value="C:\project\vision_final_project\.tools\m2"/>
+    <property name="java.vendor.url.bug" value="https://youtrack.jetbrains.com/issues/JBR"/>
+    <property name="java.io.tmpdir" value="C:\Temp\"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
+    <property name="java.version" value="25.0.3"/>
+    <property name="user.dir" value="C:\project\vision_final_project\backend"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="60568"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="native.encoding" value="MS949"/>
+    <property name="java.library.path" value="C:\Program Files\JetBrains\IntelliJ IDEA 2026.2.1\jbr\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell;C:\Users\한국전파진흥협회\.codex\tmp\arg0\codex-arg0Em8Hx0;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\libheif\libheif\bin;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\jxrlib\jxrlib\bin;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\override;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files (x86)\cloudflared\;C:\Users\한국전파진흥협회\AppData\Local\Programs\Python\Launcher\;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell;C:\Users\한국전파진흥협회\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\PyCharm 2026.1.4\bin;C:\Users\한국전파진흥협회\AppData\Local\Python\bin;C:\Users\한국전파진흥협회\AppData\Local\GitHubDesktop\bin;C:\Users\한국전파진흥협회\.dotnet\tools;C:\Users\한국전파진흥협회\AppData\Roaming\npm;C:\Users\한국전파진흥협회\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\IntelliJ IDEA 2026.2.1\bin;C:\Users\한국전파진흥협회\AppData\Local\Programs\DockerDesktop\resources\bin;C:\Program Files\JetBrains\JetBrains Rider 2026.2.0.2\bin;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;C:\Users\한국전파진흥협회\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd;C:\Users\한국전파진흥협회\AppData\Local\OpenAI\Codex\bin\73fd6465d9c76545;C:\Users\한국전파진흥협회\AppData\Local\OpenAI\Codex\bin\247581e40ee272fb;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="MS949"/>
+    <property name="java.vendor" value="JetBrains s.r.o."/>
+    <property name="java.vm.version" value="25.0.3+9-b508.16"/>
+    <property name="stdin.encoding" value="MS949"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="maven.repo.local" value="C:\project\vision_final_project\.tools\m2"/>
+    <property name="java.class.version" value="69.0"/>
+  </properties>
+  <testcase name="inferenceFailureIsNotAnInspectionDefect" classname="com.vision.inspection.InspectionApiTest" time="0.384">
+    <system-out><![CDATA[15:15:06.747 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.vision.inspection.InspectionApiTest]: InspectionApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+15:15:06.839 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.vision.inspection.Application for test class com.vision.inspection.InspectionApiTest
+15:15:06.936 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+15:15:06.939 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+15:15:06.975 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.21.4
+15:15:07.138 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+15:15:07.383 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+15:15:07.385 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+15:15:07.405 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.7.2
+  API Version: 1.55
+  Operating System: Docker Desktop
+  Total Memory: 15843 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+15:15:07.490 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Creating container for image: testcontainers/ryuk:0.12.0
+15:15:07.595 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+15:15:07.732 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 is starting: cd750977f71c8fac959d05f21bac68acd728a41a4b70884ab164f2d1b3ff948f
+15:15:08.025 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 started in PT0.5354245S
+15:15:08.032 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+15:15:08.032 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+15:15:08.032 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+15:15:08.032 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+15:15:08.134 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: 0dc5c79353a4df3c0065d91981914b47166f87859b0f9976fe5e1780dc7956dc
+15:15:10.024 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT1.9912859S
+15:15:10.025 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:65440/test?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-09-22T15:15:10.274+09:00  INFO 60568 --- [           main] c.vision.inspection.InspectionApiTest    : Starting InspectionApiTest using Java 25.0.3 with PID 60568 (started by 한국전파진흥협회 in C:\project\vision_final_project\backend)
+2026-09-22T15:15:10.275+09:00  INFO 60568 --- [           main] c.vision.inspection.InspectionApiTest    : No active profile set, falling back to 1 default profile: "default"
+2026-09-22T15:15:11.664+09:00  INFO 60568 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-09-22T15:15:11.778+09:00  INFO 60568 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1cfa7ee0
+2026-09-22T15:15:11.780+09:00  INFO 60568 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-22T15:15:11.801+09:00  INFO 60568 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:65440/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-09-22T15:15:11.837+09:00  INFO 60568 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-09-22T15:15:11.841+09:00  INFO 60568 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.016s)
+2026-09-22T15:15:11.857+09:00  INFO 60568 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-09-22T15:15:11.902+09:00  INFO 60568 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-09-22T15:15:11.915+09:00  INFO 60568 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - inspection"
+2026-09-22T15:15:11.961+09:00  INFO 60568 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "public", now at version v1 (execution time 00:00.030s)
+2026-09-22T15:15:13.017+09:00  INFO 60568 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-09-22T15:15:13.017+09:00  INFO 60568 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-09-22T15:15:13.018+09:00  INFO 60568 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-09-22T15:15:13.051+09:00  INFO 60568 --- [           main] c.vision.inspection.InspectionApiTest    : Started InspectionApiTest in 2.993 seconds (process running for 6.883)
+]]></system-out>
+    <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\project\vision_final_project\.tools\m2\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+  <testcase name="rejectsExcessiveDimensionBeforeInference" classname="com.vision.inspection.InspectionApiTest" time="0.022"/>
+  <testcase name="settingsRequireAuthorizationAndValidateValues" classname="com.vision.inspection.InspectionApiTest" time="0.024"/>
+  <testcase name="historyFiltersAndKpisComeFromCompletedRows" classname="com.vision.inspection.InspectionApiTest" time="0.379"/>
+  <testcase name="ambiguousCommitNeverDeletesCompletedImages" classname="com.vision.inspection.InspectionApiTest" time="0.057"/>
+  <testcase name="missingInspectionAndInvalidFiltersAreExplicit" classname="com.vision.inspection.InspectionApiTest" time="0.031"/>
+  <testcase name="settingsDoNotRewriteHistoricalThresholds" classname="com.vision.inspection.InspectionApiTest" time="0.11"/>
+  <testcase name="modelFailureLeavesFailedAuditButNoImagesOrKpi" classname="com.vision.inspection.InspectionApiTest" time="0.037"/>
+  <testcase name="uploadPersistsImagesDetectionsAndReturnsSnapshot" classname="com.vision.inspection.InspectionApiTest" time="0.071"/>
+  <testcase name="invalidAndOversizedFilesNeverReachVision" classname="com.vision.inspection.InspectionApiTest" time="0.025"/>
+  <testcase name="storageFailureCleansOriginalAndDoesNotComplete" classname="com.vision.inspection.InspectionApiTest" time="0.035"/>
+  <testcase name="detectionInsertFailureRollsBackCompletionAndCleansFiles" classname="com.vision.inspection.InspectionApiTest" time="0.051">
+    <system-out><![CDATA[2026-09-22T15:15:14.307+09:00 ERROR 60568 --- [           main] c.v.inspection.exception.ErrorHandler    : Database operation failed
+
+org.springframework.dao.DataAccessResourceFailureException: internal SQL must not leak
+	at com.vision.inspection.repository.InspectionDetectionRepository.insert(InspectionDetectionRepository.java:13) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728) ~[spring-aop-6.2.19.jar:6.2.19]
+	at com.vision.inspection.repository.InspectionDetectionRepository$$SpringCGLIB$$0.insert(<generated>) ~[classes/:na]
+	at com.vision.inspection.repository.InspectionRepository.lambda$complete$0(InspectionRepository.java:37) ~[classes/:na]
+	at org.springframework.transaction.support.TransactionOperations.lambda$executeWithoutResult$0(TransactionOperations.java:68) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:140) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.transaction.support.TransactionOperations.executeWithoutResult(TransactionOperations.java:67) ~[spring-tx-6.2.19.jar:6.2.19]
+	at com.vision.inspection.repository.InspectionRepository.complete(InspectionRepository.java:28) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:360) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:138) ~[spring-tx-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.2.19.jar:6.2.19]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728) ~[spring-aop-6.2.19.jar:6.2.19]
+	at com.vision.inspection.repository.InspectionRepository$$SpringCGLIB$$0.complete(<generated>) ~[classes/:na]
+	at com.vision.inspection.service.InspectionService.inspect(InspectionService.java:49) ~[classes/:na]
+	at com.vision.inspection.controller.InspectionController.inspect(InspectionController.java:21) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:258) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:191) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:991) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:896) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.55.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.2.19.jar:6.2.19]
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72) ~[spring-test-6.2.19.jar:6.2.19]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.55.jar:6.0]
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:162) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:162) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.19.jar:6.2.19]
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:162) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.2.19.jar:6.2.19]
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201) ~[spring-test-6.2.19.jar:6.2.19]
+	at com.vision.inspection.InspectionApiTest.detectionInsertFailureRollsBackCompletionAndCleansFiles(InspectionApiTest.java:116) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60) ~[surefire-junit-platform-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52) ~[surefire-junit-platform-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.6.jar:3.5.6]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.6.jar:3.5.6]
+
+]]></system-out>
+  </testcase>
+</testsuite>
