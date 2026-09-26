@@ -144,7 +144,7 @@ Invoke-RestMethod http://localhost:5000/api/v1/system/status
 최신 검사 결과:
 
 ```powershell
-Invoke-WebRequest http://localhost:5000/api/v1/inspection/latest
+Invoke-RestMethod http://localhost:5000/api/v1/inspection/latest
 ```
 
 MJPEG 확인은 브라우저에서 다음 주소를 여세요.
@@ -189,6 +189,12 @@ http://localhost:5000/api/v1/stream
 | `MASK_SCORE_THRESHOLD` | `0.70` | instance confidence threshold |
 | `MASK_BINARY_THRESHOLD` | `0.50` | mask probability threshold |
 | `MASK_OVERLAY_ALPHA` | `0.45` | mask 투명도 |
+| `EXPECTED_WASHER_COUNT` | `2` | 정상 조립에 필요한 와셔 개수 |
+| `REFERENCE_HEAD_CM` | `1.0` | 볼트 머리의 축 방향 기준 길이(cm) |
+| `REFERENCE_NUT_CM` | `1.0` | 너트 역할 볼트의 축 방향 기준 길이(cm) |
+| `REFERENCE_WASHER_CM` | `0.3` | 와셔의 축 방향 기준 길이(cm) |
+| `FULL_THREAD_CM` | `2.0` | 완전 체결 시 나사산 노출 길이(cm) |
+| `TIGHTNESS_MIN_RATIO` | `1.08` | 체결 정상 판정에 사용하는 나사산 길이 비율 |
 | `EVENT_SAMPLE_FPS` | `1.0` | Vision FPS와 독립적인 defect event 평가 빈도 |
 | `DEFECT_GEOMETRY_TOLERANCE_RATIO` | `0.05` | 정규화 geometry를 동일 상태로 보는 허용 오차 시작값 |
 | `NORMAL_RESET_FRAMES` | `5` | 이전 signature를 지우기 위한 sampled NORMAL 횟수 |
@@ -208,7 +214,7 @@ U-Net은 semantic segmentation 모델이므로 같은 class의 부품이 mask에
 | Method | Path | 목적 |
 | --- | --- | --- |
 | `GET` | `/api/v1/stream` | MJPEG processed-frame stream |
-| `GET` | `/api/v1/inspection/latest` | 최근 inspection event |
+| `GET` | `/api/v1/inspection/latest` | VisionWorker의 최신 메모리 검사 결과 |
 | `GET` | `/api/v1/inspections?page=0&size=20` | 검사 이력 |
 | `GET` | `/api/v1/inspections/{id}` | 검사 상세 |
 | `GET` | `/api/v1/inspections/{id}/image` | 저장된 evidence image |

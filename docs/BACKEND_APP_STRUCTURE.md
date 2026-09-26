@@ -28,7 +28,7 @@ Flask Blueprint와 외부 HTTP 계약을 담당한다. 카메라를 직접 열�
 | 파일 | 역할 |
 | --- | --- |
 | `stream.py` | `/api/v1/stream`, `/stream-test`, 루트 redirect |
-| `inspections.py` | 최근 검사, 이력, 상세, 불량 이미지 GET API |
+| `inspections.py` | 메모리 최신 검사와 DB 이력/상세/불량 이미지 GET API |
 | `status.py` | 카메라, 모델, worker, DB 상태 조회 |
 | `__init__.py` | Blueprint를 application factory에 노출 |
 
@@ -38,6 +38,7 @@ flowchart LR
     CLIENT --> INSPECTIONS[api/inspections.py]
     CLIENT --> STATUS[api/status.py]
     STREAM --> JPEG[Latest Encoded JPEG]
+    INSPECTIONS --> LATEST[Runtime.latest_results]
     INSPECTIONS --> REPOSITORY[InspectionRepository]
     STATUS --> RUNTIME[Runtime State]
     STATUS --> DB[(Database)]

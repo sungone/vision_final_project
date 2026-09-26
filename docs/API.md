@@ -68,30 +68,40 @@ Returns a minimal HTML page containing an `<img>` linked to `/api/v1/stream`. It
 
 ### `GET /api/v1/inspection/latest`
 
-Returns the most recently persisted inspection event.
+Returns the most recent in-memory InspectionResult produced by VisionWorker.
+It reads Runtime.latest_results and does not query PostgreSQL or invoke EventManager.
 
 ```json
 {
-  "id": 125,
   "inspectionTime": "2026-09-22T20:10:32+09:00",
   "overallResult": "DEFECT",
+  "assemblySequenceResult": "NORMAL",
+  "fasteningQualityResult": "DEFECT",
   "missingComponentResult": "NORMAL",
-  "alignmentResult": "NORMAL",
+  "alignmentResult": "NOT_EVALUATED",
   "fasteningResult": "DEFECT",
   "metrics": {
-    "washerGapPx": 12.4,
-    "threadExposurePx": 35.2
-  },
-  "defectImageUrl": "/api/v1/inspections/125/image",
-  "createdAt": "2026-09-22T20:10:32.120+09:00"
+    "modelType": "u-net-resnet18",
+    "detectedInstanceCount": 5,
+    "inferenceTimeMs": 63.42,
+    "detectedCounts": {"bolt": 2, "washer": 2, "thread": 1},
+    "detections": [],
+    "assemblyReasons": [],
+    "fasteningEvaluated": true,
+    "measuredThreadCm": 1.52,
+    "threadThresholdCm": 2.16,
+    "scaleCmPerPx": 0.01923
+  }
 }
 ```
 
 Responses:
 
-- `200 OK`: latest event returned.
-- `204 No Content`: no inspection event exists yet.
-- `503 Service Unavailable`: database is unavailable.
+- `200 OK`: latest runtime result returned.
+- `204 No Content`: VisionWorker has not produced its first result yet.
+- Database availability does not control this endpoint.
+
+See `docs/LATEST_INSPECTION_API.md` for the complete React integration contract.
 
 ## Inspection history
 

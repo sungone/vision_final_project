@@ -16,9 +16,76 @@ def test_empty_latest_and_history(client):
     assert response.get_json()["content"] == []
 
 
-def test_persist_and_read_inspection(app, client):
+def test_latest_inspection_returns_runtime_result_without_database_record(app, client):
+    inspection_time = datetime(2026, 9, 26, 5, 30, 21, 123000, tzinfo=timezone.utc)
+    result = InspectionResult(
+        overall_result=DEFECT,
+        missing_component_result=NORMAL,
+        alignment_result="NOT_EVALUATED",
+        fastening_result=DEFECT,
+        metrics={
+            "modelType": "u-net-resnet18",
+            "detectedInstanceCount": 5,
+            "inferenceTimeMs": 63.42,
+            "detectedCounts": {"bolt": 2, "washer": 2, "thread": 1},
+            "assemblyReasons": [],
+            "fasteningEvaluated": True,
+            "measuredThreadCm": 1.52,
+            "threadThresholdCm": 2.16,
+            "scaleCmPerPx": 0.01923,
+            "detections": [],
+        },
+        processed_frame=np.zeros((24, 32, 3), dtype=np.uint8),
+        inspection_time=inspection_time,
+        event_key="must-not-be-exposed",
+    )
+    app.extensions["vision_runtime"].latest_results.put(result, inspection_time)
+
+    response = client.get("/api/v1/inspection/latest")
+
+    assert response.status_code == 200
+    assert response.get_json() == result.to_live_dict()
+    assert set(response.get_json()) == {
+        "inspectionTime",
+        "overallResult",
+        "assemblySequenceResult",
+        "fasteningQualityResult",
+        "missingComponentResult",
+        "alignmentResult",
+        "fasteningResult",
+        "metrics",
+    }
+
+
+def test_latest_inspection_does_not_fall_back_to_database(app, client):
     with app.app_context():
         InspectionService(InspectionRepository(), app.config["DEFECT_STORAGE_DIR"]).persist_event(
+            InspectionResult(overall_result=DEFECT, missing_component_result=DEFECT)
+        )
+
+    assert client.get("/api/v1/inspection/latest").status_code == 204
+
+
+def test_latest_inspection_returns_newest_buffer_value(app, client):
+    first_time = datetime(2026, 9, 26, 5, 30, 20, tzinfo=timezone.utc)
+    second_time = datetime(2026, 9, 26, 5, 30, 21, tzinfo=timezone.utc)
+    app.extensions["vision_runtime"].latest_results.put(
+        InspectionResult(overall_result=NORMAL, inspection_time=first_time), first_time
+    )
+    app.extensions["vision_runtime"].latest_results.put(
+        InspectionResult(overall_result=DEFECT, inspection_time=second_time), second_time
+    )
+
+    response = client.get("/api/v1/inspection/latest")
+
+    assert response.status_code == 200
+    assert response.get_json()["overallResult"] == DEFECT
+    assert response.get_json()["inspectionTime"] == second_time.isoformat()
+
+
+def test_persist_and_read_inspection(app, client):
+    with app.app_context():
+        record = InspectionService(InspectionRepository(), app.config["DEFECT_STORAGE_DIR"]).persist_event(
             InspectionResult(
                 overall_result=DEFECT,
                 missing_component_result=NORMAL,
@@ -43,15 +110,18 @@ def test_persist_and_read_inspection(app, client):
                 inspection_time=datetime.now(timezone.utc),
             )
         )
-    latest = client.get("/api/v1/inspection/latest")
-    assert latest.status_code == 200
-    assert latest.get_json()["fasteningResult"] == DEFECT
-    assert latest.get_json()["assemblySequenceResult"] == NORMAL
-    assert latest.get_json()["fasteningQualityResult"] == DEFECT
-    assert latest.get_json()["detectedInstanceCount"] == 3
-    assert latest.get_json()["inferenceTimeMs"] == 82.4
-    assert latest.get_json()["modelName"] == "u-net-resnet18"
-    image_response = client.get(latest.get_json()["defectImageUrl"])
+        record_id = record.id
+    history = client.get("/api/v1/inspections?page=0&size=20")
+    assert history.status_code == 200
+    item = history.get_json()["content"][0]
+    assert item["fasteningResult"] == DEFECT
+    assert item["assemblySequenceResult"] == NORMAL
+    assert item["fasteningQualityResult"] == DEFECT
+    assert item["detectedInstanceCount"] == 3
+    assert item["inferenceTimeMs"] == 82.4
+    assert item["modelName"] == "u-net-resnet18"
+    assert item["id"] == record_id
+    image_response = client.get(item["defectImageUrl"])
     assert image_response.status_code == 200
     assert image_response.content_type == "image/jpeg"
     assert client.get("/api/v1/inspections?page=-1").status_code == 400
@@ -90,7 +160,7 @@ def test_signature_filter_persists_only_distinct_defects(app, client):
         fastening_result=NORMAL,
         metrics={
             "detectedCounts": {"bolt": 2, "washer": 1, "thread": 1},
-            "assemblyReasons": ["washer_count_1"],
+            "assemblyReasons": ["washer_low(1)"],
             "detections": [],
         },
     )
@@ -101,7 +171,7 @@ def test_signature_filter_persists_only_distinct_defects(app, client):
         fastening_result=NORMAL,
         metrics={
             "detectedCounts": {"bolt": 2, "washer": 0, "thread": 1},
-            "assemblyReasons": ["washer_count_0"],
+            "assemblyReasons": ["washer_low(0)"],
             "detections": [],
         },
     )

@@ -185,6 +185,8 @@ class Runtime:
         return InspectionDecisionEngine(
             expected_washer_count=self.app.config["EXPECTED_WASHER_COUNT"],
             reference_head_cm=self.app.config["REFERENCE_HEAD_CM"],
+            reference_nut_cm=self.app.config["REFERENCE_NUT_CM"],
+            reference_washer_cm=self.app.config["REFERENCE_WASHER_CM"],
             full_thread_cm=self.app.config["FULL_THREAD_CM"],
             tightness_min_ratio=self.app.config["TIGHTNESS_MIN_RATIO"],
         )

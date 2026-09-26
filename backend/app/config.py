@@ -79,8 +79,10 @@ class Config:
     DRAW_INFERENCE_STATS = _bool("DRAW_INFERENCE_STATS", True)
     EXPECTED_WASHER_COUNT = max(0, _int("EXPECTED_WASHER_COUNT", 2))
     REFERENCE_HEAD_CM = max(0.001, _float("REFERENCE_HEAD_CM", 1.0))
+    REFERENCE_NUT_CM = max(0.001, _float("REFERENCE_NUT_CM", 1.0))
+    REFERENCE_WASHER_CM = max(0.001, _float("REFERENCE_WASHER_CM", 0.3))
     FULL_THREAD_CM = max(0.001, _float("FULL_THREAD_CM", 2.0))
-    TIGHTNESS_MIN_RATIO = max(0.001, _float("TIGHTNESS_MIN_RATIO", 0.9))
+    TIGHTNESS_MIN_RATIO = max(0.001, _float("TIGHTNESS_MIN_RATIO", 1.08))
     UNET_FINE_MODEL_PATH = _path(
         "UNET_FINE_MODEL_PATH", PROJECT_DIR / "output" / "u-net" / "fine" / "best.pt", BASE_DIR
     )
