@@ -22,6 +22,8 @@ def system_status():
         {
             "cameraConnected": runtime.camera.connected,
             "visionWorkerRunning": runtime.vision.running,
+            "persistenceWorkerRunning": runtime.persistence.running,
+            "pendingPersistenceEvents": runtime.persistence.pending_count,
             "modelLoaded": runtime.model_loaded,
             "modelType": runtime.model_type,
             "visionDevice": runtime.vision_device,
@@ -34,6 +36,6 @@ def system_status():
             "cameraError": runtime.camera.last_error,
             "visionError": runtime.vision.last_error,
             "modelError": runtime.model_error,
-            "databaseError": database_error,
+            "databaseError": runtime.persistence.last_error or database_error,
         }
     )

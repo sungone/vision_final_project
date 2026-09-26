@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from app.vision.contracts import DetectedInstance, FrameVisionResult
-from app.vision.mask_rcnn_postprocessor import SegmentationPostProcessor
+from app.vision.mask_rcnn import SegmentationPostProcessor
 from app.vision.visualizer import InspectionVisualizer
 
 

@@ -23,7 +23,7 @@ if str(PROJECT_DIR) not in sys.path:
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app.vision.mask_rcnn_predictor import MaskRCNNPredictor
+from app.vision.mask_rcnn import MaskRCNNPredictor
 from training.train_mask_rcnn import CocoPolygonMaskDataset, collate_fn, validate_data
 
 

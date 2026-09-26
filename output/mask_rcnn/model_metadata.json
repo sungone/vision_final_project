@@ -31,5 +31,5 @@
   "min_size": 640,
   "max_size": 1024,
   "score_threshold": 0.5,
-  "best_val_mean_best_mask_iou": 0.9468675443295682
+  "best_val_mean_best_mask_iou": 0.9450644546010522
 }

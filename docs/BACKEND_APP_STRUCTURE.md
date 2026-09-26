@@ -13,7 +13,7 @@ backend/app/
 ├── models/         PostgreSQL에 저장되는 ORM 모델
 ├── repositories/   DB 조회·저장 연산
 ├── streaming/      공유 JPEG를 MJPEG 응답으로 전송
-├── vision/         Mask R-CNN 추론·후처리·시각화·worker
+├── vision/         모델별 추론 package와 공통 판정·시각화·worker
 ├── config.py       환경변수와 실행 설정
 ├── lifecycle.py    장기 실행 자원의 생성·시작·종료
 └── __init__.py     Flask application factory
@@ -65,34 +65,31 @@ flowchart LR
 
 ### `vision/`
 
-Mask R-CNN 모델 로딩부터 프레임 추론, instance 정규화, 시각화, JPEG 생성까지 영상 처리의 중심 책임을 담당한다.
+모델별 predictor/postprocessor/processor와 모델 공통 contract, 판정, 시각화, JPEG 처리를 분리한다. 상세 흐름은 [Vision Package Flow](VISION_PIPELINE.md)를 참고한다.
 
 | 파일 | 역할 |
 | --- | --- |
 | `contracts.py` | `DetectedInstance`, `FrameVisionResult`, `InspectionResult`, processor protocol |
-| `mask_rcnn_predictor.py` | Mask R-CNN architecture 재구성, state dict 로드, inference |
-| `yolo26_predictor.py` | Ultralytics YOLO26 best.pt 로드, device 선택, inference |
-| `yolo26_postprocessor.py` | YOLO Results를 공통 `DetectedInstance`로 변환 |
-| `yolo26_processor.py` | YOLO predictor/postprocessor/visualizer orchestration |
-| `postprocessor.py` | score filtering, binary mask, contour, center, area 계산 |
+| `mask_rcnn/` | Mask R-CNN predictor, postprocessor, processor package |
+| `unet/` | locator/fine U-Net predictor, connected-component postprocessor, processor package |
+| `yolo26/` | Ultralytics YOLO predictor, Results postprocessor, processor package |
+| `decision_engine.py` | 조립 순서·체결 상태 판정과 compact metadata 생성 |
 | `visualizer.py` | mask overlay, contour, box, label, inference 정보 표시 |
-| `processor.py` | predictor/postprocessor/visualizer orchestration, Mock fallback |
 | `worker.py` | 최신 raw frame 처리, JPEG 인코딩, 공유 버퍼 갱신 |
 | `__init__.py` | 순환 import를 피하는 public contract 노출 |
 
 ```mermaid
 flowchart LR
     RAW[Latest Raw Frame] --> WORKER[VisionWorker]
-    WORKER --> PROCESSOR[MaskRCNNVisionProcessor]
-    PROCESSOR --> PREDICTOR[YOLO26SegPredictor]
-    PREDICTOR -->|boxes labels scores masks| POST[SegmentationPostProcessor]
+    WORKER --> PROCESSOR[Configured VisionProcessor]
+    PROCESSOR --> PREDICTOR[Model Predictor]
+    PREDICTOR --> POST[Model PostProcessor]
     POST --> RESULT[FrameVisionResult]
-    RESULT --> VIS[InspectionVisualizer]
+    RESULT --> RULE[InspectionDecisionEngine]
+    RULE --> VIS[InspectionVisualizer]
     VIS --> FRAME[Processed OpenCV Frame]
     FRAME --> JPEG[cv2.imencode]
     JPEG --> BUFFER[Latest Encoded JPEG]
-
-    RESULT -. future .-> RULE[Rule Engine]
 ```
 
 색상은 OpenCV BGR 기준으로 `visualizer.py` 한 곳에서 관리한다.
@@ -127,22 +124,22 @@ client가 증가해도 카메라, inference, JPEG encoding은 반복되지 않�
 
 | 파일 | 역할 |
 | --- | --- |
-| `event_manager.py` | 연속 defect 확인, 중복 저장 억제, normal 복귀 상태머신 |
+| `defect_signature.py` | categorical 값과 정규화 geometry로 비교 가능한 불량 signature 생성 |
+| `event_manager.py` | 1 FPS sampling, signature 비교, 중복 저장 억제, normal reset |
+| `persistence_worker.py` | bounded queue에서 DB/이미지 저장을 비동기 재시도 |
 | `service.py` | 확정 이벤트의 증거 이미지 저장과 ORM entity 생성 |
 | `__init__.py` | inspection public API 노출 |
 
 ```mermaid
 stateDiagram-v2
     [*] --> NORMAL
-    NORMAL --> DEFECT_CANDIDATE: defect frame
-    DEFECT_CANDIDATE --> DEFECT_CANDIDATE: consecutive defect
-    DEFECT_CANDIDATE --> NORMAL: normal frame
-    DEFECT_CANDIDATE --> CONFIRMED_DEFECT: confirmation threshold
-    CONFIRMED_DEFECT --> CONFIRMED_DEFECT: defect remains / no INSERT
-    CONFIRMED_DEFECT --> NORMAL: normal reset threshold
+    NORMAL --> CONFIRMED_DEFECT: new sampled signature / INSERT
+    CONFIRMED_DEFECT --> CONFIRMED_DEFECT: same signature / DROP
+    CONFIRMED_DEFECT --> CONFIRMED_DEFECT: changed signature / INSERT
+    CONFIRMED_DEFECT --> NORMAL: sampled normal reset threshold
 ```
 
-현재 Mask R-CNN은 instance segmentation만 수행하며 실제 불량 판정은 하지 않는다. 미래 Rule Engine이 `InspectionResult`를 만들면 Event Manager가 저장 시점을 결정한다.
+세 모델의 `InspectionResult`는 같은 signature 비교 경로를 사용한다. 중간 NORMAL 없이 categorical 또는 geometry가 의미 있게 바뀌면 새 이벤트가 된다.
 
 ### `models/`
 

@@ -1,17 +1,19 @@
 # Vision Inspection Backend MVP
 
-USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 YOLO26 segmentation 모델을 적용하고 Bolt, Washer, Thread/Nut instance mask를 시각화해 React로 전달하는 실시간 검사 애플리케이션입니다. 기존 Mask R-CNN adapter도 환경변수로 선택할 수 있다.
+USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 2단계 U-Net segmentation 모델을 적용하고 Bolt, Washer, Thread 영역과 체결 판정을 시각화해 React로 전달하는 실시간 검사 애플리케이션입니다. YOLO26과 Mask R-CNN processor도 환경변수로 선택할 수 있습니다.
 
-실제 Missing/Alignment/Fastening 판정과 물리 단위 KPI 계산은 아직 구현하지 않습니다.
+U-Net 결과는 공통 Decision Engine으로 전달되어 부품 구성/순서와 나사산 노출 길이를 기반으로 `NORMAL`/`DEFECT`를 판정합니다.
 
 ## 핵심 구조
 
 ```text
 USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
                                       ↓
-                         YOLO26 Vision Worker
+                    U-Net Locator → Fine Vision Worker
                                       ↓
-                      Latest Processed Frame + Result
+                  Component Extraction → Decision Engine
+                                      ↓
+                      Latest Overlay Frame + Result
                               ↙                    ↘
                       JPEG / MJPEG              Event Manager
                               ↓                    ↓
@@ -31,6 +33,10 @@ USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
 
 `backend/app` 패키지별 책임과 의존 관계는 [Backend App Structure](docs/BACKEND_APP_STRUCTURE.md)를 참고하세요.
 
+모델별 Vision 파일 구조와 실행 흐름은 [Vision Package Flow](docs/VISION_PIPELINE.md)를 참고하세요.
+
+최종 Backend 아키텍처, 스레드, 전체 파일 역할, DB/API와 실행 순서는 [Backend Final Guide](docs/BACKEND_FINAL_GUIDE.md)를 참고하세요.
+
 외부 HTTPS 접속을 위한 Cloudflare Tunnel 설정은 [Cloudflare Tunnel 실행 가이드](docs/CLOUDFLARE_TUNNEL.md)를 참고하세요.
 
 ## 요구 사항
@@ -48,6 +54,13 @@ USB/UVC 카메라는 Windows 호스트의 OpenCV가 직접 사용합니다. Post
 
 ```powershell
 docker compose up -d db
+```
+
+최초 실행 또는 schema 변경 후 migration을 적용합니다.
+
+```powershell
+Get-Content -Raw backend\migrations\001_create_inspections.sql |
+  docker compose exec -T db psql -U vision -d vision_inspection
 ```
 
 기본 개발 DB는 다음과 같습니다.
@@ -82,16 +95,20 @@ $env:CAMERA_FPS = "30"
 $env:VISION_FPS = "10"
 $env:STREAM_FPS = "10"
 $env:JPEG_QUALITY = "80"
-$env:VISION_PROCESSOR = "yolo26"
-$env:YOLO26_MODEL_PATH = "../output/yolo26/best.pt"
-$env:YOLO_IMAGE_SIZE = "640"
-$env:YOLO_SCORE_THRESHOLD = "0.70"
+$env:VISION_PROCESSOR = "unet"
+$env:UNET_FINE_MODEL_PATH = "../output/u-net/fine/best.pt"
+$env:UNET_LOCATOR_MODEL_PATH = "../output/u-net/locator/best.pt"
+$env:UNET_IMAGE_SIZE = "640"
+$env:UNET_USE_LOCATOR = "true"
+$env:UNET_MIN_COMPONENT_AREA = "500"
 $env:VISION_DEVICE = "auto"
 $env:MASK_SCORE_THRESHOLD = "0.70"
 $env:MASK_BINARY_THRESHOLD = "0.50"
-$env:DEFECT_CONFIRM_FRAMES = "3"
+$env:EVENT_SAMPLE_FPS = "1.0"
+$env:DEFECT_GEOMETRY_TOLERANCE_RATIO = "0.05"
 $env:NORMAL_RESET_FRAMES = "5"
-$env:EVENT_COOLDOWN_SECONDS = "0"
+$env:PERSISTENCE_QUEUE_SIZE = "10"
+$env:PERSISTENCE_RETRY_SECONDS = "2"
 $env:DEFECT_STORAGE_DIR = "backend/storage/defects"
 $env:START_BACKGROUND_WORKERS = "true"
 ```
@@ -151,10 +168,17 @@ http://localhost:5000/api/v1/stream
 | `CAMERA_WIDTH` | `1280` | 요청 capture 폭 |
 | `CAMERA_HEIGHT` | `720` | 요청 capture 높이 |
 | `CAMERA_FPS` | `30` | camera capture 목표 FPS |
-| `VISION_FPS` | `10` | mock/future vision 처리 목표 FPS |
+| `VISION_FPS` | `10` | vision 처리 목표 FPS. 실제 속도는 장치 성능에 따라 제한됨 |
 | `STREAM_FPS` | `10` | MJPEG 전송 최대 FPS |
 | `JPEG_QUALITY` | `80` | OpenCV JPEG quality, 1–100 |
-| `VISION_PROCESSOR` | `yolo26` | `yolo26`, `mask_rcnn`, `mock` 중 선택 |
+| `VISION_PROCESSOR` | `unet` | `unet`, `yolo26`, `mask_rcnn`, `mock` 중 선택 |
+| `UNET_FINE_MODEL_PATH` | `output/u-net/fine/best.pt` | 정밀 segmentation checkpoint |
+| `UNET_LOCATOR_MODEL_PATH` | `output/u-net/locator/best.pt` | 관심 영역 탐색 checkpoint |
+| `UNET_IMAGE_SIZE` | `640` | U-Net 정사각형 입력 크기 |
+| `UNET_USE_LOCATOR` | `true` | locator ROI를 먼저 검출한 뒤 fine 모델을 실행할지 여부 |
+| `UNET_ROI_MARGIN_RATIO` | `0.15` | locator ROI 외곽 여유 비율 |
+| `UNET_MIN_COMPONENT_AREA` | `500` | semantic mask에서 instance로 인정할 최소 연결 영역 픽셀 수 |
+| `UNET_USE_HALF` | `true` | CUDA 사용 시 FP16 추론 사용 여부 |
 | `YOLO26_MODEL_PATH` | `output/yolo26/best.pt` | YOLO26 segmentation checkpoint |
 | `YOLO_IMAGE_SIZE` | `640` | YOLO inference 입력 크기 |
 | `YOLO_SCORE_THRESHOLD` | `0.70` | YOLO instance confidence threshold |
@@ -165,14 +189,19 @@ http://localhost:5000/api/v1/stream
 | `MASK_SCORE_THRESHOLD` | `0.70` | instance confidence threshold |
 | `MASK_BINARY_THRESHOLD` | `0.50` | mask probability threshold |
 | `MASK_OVERLAY_ALPHA` | `0.45` | mask 투명도 |
-| `DEFECT_CONFIRM_FRAMES` | `3` | defect 확정에 필요한 연속 frame 수 |
-| `NORMAL_RESET_FRAMES` | `5` | 다음 event를 허용하기 위한 연속 normal frame 수 |
-| `EVENT_COOLDOWN_SECONDS` | `0` | 상태머신을 보조하는 선택적 cooldown |
+| `EVENT_SAMPLE_FPS` | `1.0` | Vision FPS와 독립적인 defect event 평가 빈도 |
+| `DEFECT_GEOMETRY_TOLERANCE_RATIO` | `0.05` | 정규화 geometry를 동일 상태로 보는 허용 오차 시작값 |
+| `NORMAL_RESET_FRAMES` | `5` | 이전 signature를 지우기 위한 sampled NORMAL 횟수 |
+| `PERSISTENCE_QUEUE_SIZE` | `10` | Vision과 DB I/O를 분리하는 확정 이벤트 queue 크기 |
+| `PERSISTENCE_RETRY_SECONDS` | `2` | DB/파일 저장 실패 시 재시도 간격 |
+| `ALLOW_MOCK_FALLBACK` | `false` | 모델 load 실패 시 mock을 허용할지 여부. 운영에서는 `false` 권장 |
 | `DEFECT_STORAGE_DIR` | `backend/storage/defects` | defect evidence 이미지 경로 |
 | `DATABASE_AUTO_CREATE` | 환경별 설정 | 개발용 schema 자동 생성 여부 |
 | `START_BACKGROUND_WORKERS` | `true` | camera/vision worker 시작 여부 |
 
-Camera FPS, Vision FPS, Stream FPS는 독립적입니다. 30 FPS 카메라를 사용하더라도 vision과 browser stream은 5–15 FPS로 운영할 수 있습니다.
+Camera FPS, Vision FPS, Event sampling FPS, Stream FPS는 독립적입니다. 30 FPS 카메라와 10 FPS vision을 사용해도 DB event 평가는 기본 1 FPS로 수행합니다.
+
+U-Net은 semantic segmentation 모델이므로 같은 class의 부품이 mask에서 서로 붙으면 하나의 연결 영역으로 해석됩니다. 와셔처럼 동일 class instance의 개수 판정이 중요할 때는 라벨 경계를 분리하고, 학습 결과에서도 부품 사이 배경 경계가 유지되는지 검증해야 합니다.
 
 ## REST API
 
@@ -192,12 +221,10 @@ Camera FPS, Vision FPS, Stream FPS는 독립적입니다. 30 FPS 카메라를 �
 .\.venv\Scripts\python -m pytest -q
 ```
 
-단위 테스트는 실제 카메라 없이 frame buffer, event manager, score/mask filtering, mask 색상 overlay와 MJPEG endpoint를 검증합니다. 실제 모델 smoke test는 학습 이미지 한 장으로 load, inference, visualization, JPEG encoding을 확인합니다.
+단위 테스트는 실제 카메라 없이 camera lifecycle, frame buffer, Vision Worker의 JPEG buffer 갱신, event manager 중복 방지, DB 장애 격리, U-Net component 추출, 판정 로직, 증거 이미지 저장과 MJPEG endpoint를 검증합니다. 실제 모델 smoke test는 학습 이미지 한 장으로 load, inference, visualization, JPEG encoding을 확인합니다.
 
 ## 현재 범위 밖
 
-- 실제 부품 누락·정렬·체결 판정
-- 실제 KPI 계산
 - 제품 추적 또는 PLC 연동
 - WebRTC/H.264, SSE, WebSocket
 - MES/ERP/재고/권한/생산계획 기능

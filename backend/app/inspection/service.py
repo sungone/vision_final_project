@@ -17,8 +17,12 @@ class InspectionService:
         self.storage_dir = Path(storage_dir).resolve()
 
     def persist_event(self, result: InspectionResult) -> Inspection:
-        image_path = self._save_defect_frame(result)
         event_key = result.event_key or f"evt-{result.inspection_time.strftime('%Y%m%d%H%M%S%f')}-{uuid4().hex[:8]}"
+        result.event_key = event_key
+        existing = self.repository.get_by_event_key(event_key)
+        if existing is not None:
+            return existing
+        image_path = self._save_defect_frame(result)
         record = Inspection(
             inspection_time=result.inspection_time,
             overall_result=result.overall_result,
@@ -46,8 +50,12 @@ class InspectionService:
         path = (self.storage_dir / filename).resolve()
         if self.storage_dir not in path.parents:
             raise ValueError("invalid defect image path")
-        ok = cv2.imwrite(str(path), result.processed_frame)
+        ok, encoded = cv2.imencode(".jpg", result.processed_frame)
         if not ok:
-            raise OSError(f"failed to write defect image: {path}")
+            raise OSError("failed to encode defect image")
+        try:
+            path.write_bytes(encoded.tobytes())
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
         return str(path)
-

@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import numpy as np
 import torch
 
-from app.vision.yolo26_postprocessor import YOLO26SegmentationPostProcessor
+from app.vision.yolo26 import YOLO26SegmentationPostProcessor
 
 
 def test_yolo26_postprocessor_builds_structured_instances_and_resizes_masks():
