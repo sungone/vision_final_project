@@ -9,7 +9,7 @@ from .contracts import DEFECT, InspectionResult, FrameVisionResult
 CLASS_COLORS: dict[str, tuple[int, int, int]] = {
     "bolt": (255, 0, 0),
     "washer": (0, 255, 255),
-    "thread": (255, 0, 0),
+    "thread": (0, 0, 255),
 }
 DISPLAY_NAMES = {"bolt": "Bolt", "washer": "Washer", "thread": "Thread/Nut"}
 
