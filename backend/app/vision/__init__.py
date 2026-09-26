@@ -14,7 +14,10 @@ from .contracts import (
     InspectionResult,
     VisionProcessor,
 )
-from .processor import MaskRCNNVisionProcessor, MockVisionProcessor
+from .decision_engine import InspectionDecisionEngine
+from .mask_rcnn import MaskRCNNVisionProcessor, MockVisionProcessor
+from .unet import UNetVisionProcessor
+from .yolo26 import YOLO26VisionProcessor
 
 __all__ = [
     "DEFECT",
@@ -26,4 +29,7 @@ __all__ = [
     "VisionProcessor",
     "MaskRCNNVisionProcessor",
     "MockVisionProcessor",
+    "InspectionDecisionEngine",
+    "UNetVisionProcessor",
+    "YOLO26VisionProcessor",
 ]

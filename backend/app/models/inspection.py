@@ -29,14 +29,20 @@ class Inspection(db.Model):
     )
 
     def to_dict(self, include_image_url: bool = True) -> dict:
+        metrics = self.metrics or {}
         result = {
             "id": self.id,
             "inspectionTime": _iso(self.inspection_time),
             "overallResult": self.overall_result,
+            "assemblySequenceResult": self.missing_component_result,
+            "fasteningQualityResult": self.fastening_result,
             "missingComponentResult": self.missing_component_result,
             "alignmentResult": self.alignment_result,
             "fasteningResult": self.fastening_result,
-            "metrics": self.metrics or {},
+            "detectedInstanceCount": metrics.get("detectedInstanceCount"),
+            "inferenceTimeMs": metrics.get("inferenceTimeMs"),
+            "modelName": metrics.get("modelType"),
+            "metrics": metrics,
             "createdAt": _iso(self.created_at),
         }
         if include_image_url:
@@ -52,4 +58,3 @@ def _iso(value: datetime | None) -> str | None:
     if value.tzinfo is None:
         value = value.replace(tzinfo=timezone.utc)
     return value.isoformat()
-

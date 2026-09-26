@@ -2,7 +2,9 @@
 
 ## Storage model
 
-PostgreSQL stores inspection events, not camera frames. A 30 FPS defect sequence may contain hundreds of defective observations but produces one row when the Event Manager transitions into `CONFIRMED_DEFECT`.
+PostgreSQL stores inspection events, not camera frames. Vision 결과는 기본 1 FPS로 평가되며 동일한 `DefectSignature`는 한 행만 만든다. NORMAL 없이도 categorical 또는 geometry가 tolerance 밖으로 바뀌면 새 행을 만든다.
+
+DefectSignature 자체는 비교용 메모리 객체이므로 별도 column으로 저장하지 않는다. 기존 categorical column과 metrics JSONB가 판정 결과 및 재현용 metadata를 계속 저장한다.
 
 The schema is intentionally small. It contains the stable fields needed for list/detail APIs and a JSONB object for model-dependent measurements.
 
@@ -16,8 +18,8 @@ The schema is intentionally small. It contains the stable fields needed for list
 | `missing_component_result` | `VARCHAR(20)` | No | Missing-component result. |
 | `alignment_result` | `VARCHAR(20)` | No | Final assembly/alignment result. |
 | `fastening_result` | `VARCHAR(20)` | No | Fastening result. |
-| `metrics` | `JSONB` | No | Extensible numeric/string measurements; defaults to `{}`. |
-| `defect_image_path` | `TEXT` | Yes | Storage-relative evidence-image path. |
+| `metrics` | `JSONB` | No | Model name, inference summary and compact detection metadata; defaults to `{}`. |
+| `defect_image_path` | `TEXT` | Yes | Server-controlled evidence-image filesystem path. |
 | `event_key` | `VARCHAR(120)` | Yes | Optional event identity; unique when present. A future tracker or PLC cycle ID can supply this value. |
 | `created_at` | `TIMESTAMPTZ` | No | Row creation time. |
 
@@ -38,13 +40,23 @@ The partial unique index supports a later PLC/tracker identity without forcing t
 
 ## Why JSONB for metrics
 
-Measurements will change as segmentation and rule algorithms mature. `washer_gap_px`, `thread_exposure_px`, and `nut_angle_deg` are examples, not a stable relational contract.
+Measurements and detection metadata will change as segmentation and rule algorithms mature. The MVP therefore stores compact query/display metadata while deliberately excluding full masks and contour coordinate arrays.
 
 ```json
 {
-  "washerGapPx": 12.4,
-  "threadExposurePx": 35.2,
-  "nutAngleDeg": 4.1
+  "modelType": "u-net-resnet18",
+  "detectedInstanceCount": 5,
+  "inferenceTimeMs": 82.4,
+  "detections": [
+    {
+      "classId": 2,
+      "className": "washer",
+      "confidence": 0.96,
+      "bbox": [10, 20, 30, 40],
+      "center": [20.0, 30.0],
+      "areaPx": 320
+    }
+  ]
 }
 ```
 
@@ -77,17 +89,17 @@ For deployment across multiple backend instances, replace local storage with obj
 
 ## Duplicate-event prevention
 
-The primary guard is the in-memory Event Manager state machine described in [ARCHITECTURE.md](ARCHITECTURE.md). It persists only on entry into `CONFIRMED_DEFECT`.
+The primary guard is the in-memory Event Manager described in [ARCHITECTURE.md](ARCHITECTURE.md). It samples independently from Vision FPS and persists only a signature that differs meaningfully from the last stored defect.
 
 Database uniqueness becomes the second guard once a reliable tracker/PLC identity exists and is assigned to `event_key`:
 
 ```text
-Rule result → Event Manager → confirmed cycle → INSERT once
-                                         ↓
-                              UNIQUE(event_key) safety net
+Rule result → 1 FPS sample → signature compare → changed defect only → INSERT
+                                                              ↓
+                                                   UNIQUE(event_key) safety net
 ```
 
-A timestamp cooldown alone is not a database identity and must not be used as a unique key.
+Inference time, confidence jitter, timestamp, and event key are not signature features. Duplicate sampled frames never reach image saving or event-key generation.
 
 ## Transaction boundary
 

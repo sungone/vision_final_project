@@ -47,10 +47,20 @@ class InspectionResult:
     def is_defect(self) -> bool:
         return self.overall_result == DEFECT
 
+    @property
+    def assembly_sequence_result(self) -> str:
+        return self.missing_component_result
+
+    @property
+    def fastening_quality_result(self) -> str:
+        return self.fastening_result
+
     def to_live_dict(self) -> dict[str, Any]:
         return {
             "inspectionTime": self.inspection_time.isoformat(),
             "overallResult": self.overall_result,
+            "assemblySequenceResult": self.assembly_sequence_result,
+            "fasteningQualityResult": self.fastening_quality_result,
             "missingComponentResult": self.missing_component_result,
             "alignmentResult": self.alignment_result,
             "fasteningResult": self.fastening_result,

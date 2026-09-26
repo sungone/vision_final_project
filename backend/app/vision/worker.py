@@ -92,7 +92,11 @@ class VisionWorker:
                     self.last_error = None
                     event = self.event_manager.consume(result)
                     if event is not None:
-                        self.event_callback(event)
+                        try:
+                            self.event_callback(event)
+                        except Exception:
+                            self.event_manager.mark_event_delivery_failed()
+                            raise
                 except Exception as exc:
                     self.last_error = str(exc)
                     logger.exception("vision frame processing failed")
