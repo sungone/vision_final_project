@@ -1,0 +1,6 @@
+C:\project\vision_final_project\backend\src\test\java\com\vision\inspection\InspectionApiTest.java
+C:\project\vision_final_project\backend\src\test\java\com\vision\inspection\rule\InspectionRuleEngineTest.java
+C:\project\vision_final_project\backend\src\test\java\com\vision\inspection\storage\ImageValidatorTest.java
+C:\project\vision_final_project\backend\src\test\java\com\vision\inspection\storage\LocalImageStorageServiceTest.java
+C:\project\vision_final_project\backend\src\test\java\com\vision\inspection\storage\ProcessedImageRendererTest.java
+C:\project\vision_final_project\backend\src\test\java\com\vision\inspection\vision\YoloInferenceServiceTest.java
