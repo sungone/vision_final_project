@@ -3,6 +3,7 @@ import type {
   InspectionResponse,
 } from '../types/inspection'
 import type {
+  InspectionHistoryPage,
   LatestInspectionResponse,
   SystemStatus,
 } from '../types/vision'
@@ -29,7 +30,6 @@ export async function getLatestInspection(
     },
   )
 
-  // 서버 실행 직후 첫 분석 결과가 없을 때의 정상 응답
   if (response.status === 204) {
     return null
   }
@@ -41,6 +41,33 @@ export async function getLatestInspection(
   }
 
   return response.json() as Promise<LatestInspectionResponse>
+}
+
+export async function getInspectionHistory(
+  page = 0,
+  size = 100,
+  signal?: AbortSignal,
+): Promise<InspectionHistoryPage> {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  })
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/inspections?${query.toString()}`,
+    {
+      method: 'GET',
+      signal,
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      `검사 이력 조회 실패: HTTP ${response.status}`,
+    )
+  }
+
+  return response.json() as Promise<InspectionHistoryPage>
 }
 
 export async function getSystemStatus(
@@ -63,8 +90,8 @@ export async function getSystemStatus(
   return response.json() as Promise<SystemStatus>
 }
 
-// 현재 백엔드에 POST 엔드포인트가 구현되기 전까지
-// 이미지 검사 화면에서는 이 함수를 호출하지 않도록 해야 합니다.
+// 백엔드 POST 엔드포인트가 구현될 때까지
+// 이미지 검사 화면에서는 호출하지 않습니다.
 export async function inspectImage(
   image: File,
 ): Promise<InspectionResponse> {
