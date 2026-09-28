@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   History,
   LayoutDashboard,
+  MonitorPlay,
   ScanLine,
   Settings,
 } from 'lucide-react'
@@ -17,10 +18,31 @@ const navigation: {
   path: string
   icon: LucideIcon
 }[] = [
-  { name: '대시보드', path: '/dashboard', icon: LayoutDashboard },
-  { name: '이미지 검사', path: '/inspection', icon: ScanLine },
-  { name: '검사 이력', path: '/history', icon: History },
-  { name: '환경 설정', path: '/settings', icon: Settings },
+  {
+    name: '대시보드',
+    path: '/dashboard',
+    icon: LayoutDashboard,
+  },
+  {
+    name: '이미지 검사',
+    path: '/inspection',
+    icon: ScanLine,
+  },
+  {
+    name: '실시간 영상 검사',
+    path: '/realtime',
+    icon: MonitorPlay,
+  },
+  {
+    name: '검사 이력',
+    path: '/history',
+    icon: History,
+  },
+  {
+    name: '환경 설정',
+    path: '/settings',
+    icon: Settings,
+  },
 ]
 
 export default function Sidebar({
@@ -41,30 +63,36 @@ export default function Sidebar({
         </div>
 
         <div>
-          <p className="text-xl font-bold">Smart Bolt</p>
-          <p className="text-xs text-blue-100">Vision Program</p>
+          <p className="text-xl font-bold">
+            Smart Bolt
+          </p>
+          <p className="text-xs text-blue-100">
+            Vision Program
+          </p>
         </div>
       </div>
 
       <nav className="mt-12 space-y-2">
-        {navigation.map(({ name, path, icon: Icon }) => (
-          <NavLink
-            key={path}
-            to={path}
-            onClick={onNavigate}
-            className={({ isActive }) =>
-              [
-                'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition',
-                isActive
-                  ? 'border border-blue-400/40 bg-[#0b477b] text-white'
-                  : 'text-blue-100 hover:bg-white/10 hover:text-white',
-              ].join(' ')
-            }
-          >
-            <Icon size={19} />
-            {name}
-          </NavLink>
-        ))}
+        {navigation.map(
+          ({ name, path, icon: Icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              onClick={onNavigate}
+              className={({ isActive }) =>
+                [
+                  'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold transition',
+                  isActive
+                    ? 'border border-blue-400/40 bg-[#0b477b] text-white'
+                    : 'text-blue-100 hover:bg-white/10 hover:text-white',
+                ].join(' ')
+              }
+            >
+              <Icon size={19} />
+              {name}
+            </NavLink>
+          ),
+        )}
       </nav>
 
       <div className="mt-auto border-t border-blue-300/20 px-3 pt-5">
@@ -72,8 +100,12 @@ export default function Sidebar({
           <span className="h-3 w-3 rounded-full bg-emerald-400" />
 
           <div>
-            <p className="text-sm font-semibold">시스템 상태</p>
-            <p className="text-xs text-blue-100">모든 서비스 정상</p>
+            <p className="text-sm font-semibold">
+              시스템 상태
+            </p>
+            <p className="text-xs text-blue-100">
+              모든 서비스 정상
+            </p>
           </div>
         </div>
       </div>
