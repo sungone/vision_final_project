@@ -3,6 +3,7 @@ import type {
   InspectionResponse,
 } from '../types/inspection'
 import type {
+  InspectionHistoryItem,
   InspectionHistoryPage,
   LatestInspectionResponse,
   SystemStatus,
@@ -11,8 +12,11 @@ import type {
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? ''
 
-export function getVisionStreamUrl(cacheKey?: number) {
-  const url = `${API_BASE_URL}/api/v1/stream`
+export function getVisionStreamUrl(
+  cacheKey?: number,
+) {
+  const url =
+    `${API_BASE_URL}/api/v1/stream`
 
   return cacheKey == null
     ? url
@@ -70,6 +74,72 @@ export async function getInspectionHistory(
   return response.json() as Promise<InspectionHistoryPage>
 }
 
+export async function getInspectionDetail(
+  inspectionId: number | string,
+  signal?: AbortSignal,
+): Promise<InspectionHistoryItem> {
+  const encodedId = encodeURIComponent(
+    String(inspectionId),
+  )
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/inspections/${encodedId}`,
+    {
+      method: 'GET',
+      signal,
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error(
+      '요청한 검사 기록을 찾을 수 없습니다.',
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `검사 상세 조회 실패: HTTP ${response.status}`,
+    )
+  }
+
+  return response.json() as Promise<InspectionHistoryItem>
+}
+
+export type DeleteInspectionResponse = {
+  deleted: boolean
+  inspectionId: number
+  imageDeleted: boolean
+}
+
+export async function deleteInspection(
+  inspectionId: number | string,
+): Promise<DeleteInspectionResponse> {
+  const encodedId = encodeURIComponent(
+    String(inspectionId),
+  )
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/inspections/${encodedId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+
+  if (response.status === 404) {
+    throw new Error(
+      '삭제할 검사 기록을 찾을 수 없습니다.',
+    )
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `검사 기록 삭제 실패: HTTP ${response.status}`,
+    )
+  }
+
+  return response.json() as Promise<DeleteInspectionResponse>
+}
+
 export async function getSystemStatus(
   signal?: AbortSignal,
 ): Promise<SystemStatus> {
@@ -90,8 +160,6 @@ export async function getSystemStatus(
   return response.json() as Promise<SystemStatus>
 }
 
-// 백엔드 POST 엔드포인트가 구현될 때까지
-// 이미지 검사 화면에서는 호출하지 않습니다.
 export async function inspectImage(
   image: File,
 ): Promise<InspectionResponse> {
@@ -124,7 +192,9 @@ export async function inspectImage(
   return response.json() as Promise<InspectionResponse>
 }
 
-export function resolveResultImageUrl(path: string) {
+export function resolveResultImageUrl(
+  path: string,
+) {
   if (/^https?:\/\//i.test(path)) {
     return path
   }

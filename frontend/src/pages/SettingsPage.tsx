@@ -513,10 +513,10 @@ function SystemInformation() {
 
         <ServiceCard
           icon={Database}
-          name="MySQL"
+          name="PostgreSQL"
           status="UNKNOWN"
           label="백엔드 연결 후 확인"
-          detail="Port 3306"
+          detail="Port 5432"
         />
 
         <ServiceCard
