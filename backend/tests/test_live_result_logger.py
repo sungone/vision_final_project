@@ -20,6 +20,14 @@ def _result() -> InspectionResult:
             "modelType": "u-net-resnet18",
             "detectedInstanceCount": 2,
             "detectedCounts": {"washer": 1, "bolt": 1},
+            "assemblyRoleCounts": {
+                "boltHead": 1,
+                "nut": 0,
+                "headSideWasher": 1,
+                "nutSideWasher": 0,
+                "unassignedWasher": 0,
+                "thread": 1,
+            },
             "visionFps": 9.84,
             "inferenceTimeMs": 82.31,
             "processingTimeMs": 96.44,
@@ -44,6 +52,10 @@ def test_formats_only_values_from_inspection_result():
     assert "Thread Exposure Ratio: 1.420" in output
     assert "Threshold            : 1.360" in output
     assert "Vision FPS            : 9.84" in output
+    assert "Bolt Head             : 1" in output
+    assert "Nut                   : 0" in output
+    assert "Head-side Washer      : 1" in output
+    assert "Nut-side Washer       : 0" in output
     assert "- washer_count_1" in output
     assert "bolt    conf=0.982 bbox=[421,180,512,602]" in output
     assert "areaPx=18342" in output

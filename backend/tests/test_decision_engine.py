@@ -96,6 +96,101 @@ def test_one_bolt_accumulates_component_and_fastening_reasons():
     assert result.metrics["reasons"] == ["NUT_MISSING", "FASTEN_UNMEASURED"]
 
 
+def test_nut_missing_still_assigns_both_washer_roles():
+    instances = [
+        _instance(0, "bolt", 0, 40),
+        _instance(1, "washer", 45, 55, 30, 70),
+        _instance(1, "washer", 80, 90, 30, 70),
+        _instance(2, "thread", 105, 190, 40, 60),
+    ]
+
+    result = InspectionDecisionEngine().evaluate(_vision(instances=instances), model_type="test")
+
+    assert result.metrics["componentReasons"] == ["NUT_MISSING"]
+    assert result.metrics["assemblyRoleCounts"] == {
+        "boltHead": 1,
+        "nut": 0,
+        "headSideWasher": 1,
+        "nutSideWasher": 1,
+        "unassignedWasher": 0,
+        "thread": 1,
+    }
+
+
+def test_nut_and_nut_side_washer_missing_is_identified_from_mask_edges():
+    instances = [
+        _instance(0, "bolt", 0, 40),
+        _instance(1, "washer", 45, 55, 30, 70),
+        _instance(2, "thread", 105, 190, 40, 60),
+    ]
+
+    result = InspectionDecisionEngine().evaluate(_vision(instances=instances), model_type="test")
+
+    assert result.metrics["componentReasons"] == ["NUT_MISSING", "WASHER_MISSING_NUT_SIDE"]
+    assert result.metrics["assemblyRoleCounts"]["headSideWasher"] == 1
+    assert result.metrics["assemblyRoleCounts"]["nutSideWasher"] == 0
+
+
+def test_nut_and_head_side_washer_missing_is_identified_from_mask_edges():
+    instances = [
+        _instance(0, "bolt", 0, 40),
+        _instance(1, "washer", 80, 90, 30, 70),
+        _instance(2, "thread", 105, 190, 40, 60),
+    ]
+
+    result = InspectionDecisionEngine().evaluate(_vision(instances=instances), model_type="test")
+
+    assert result.metrics["componentReasons"] == ["NUT_MISSING", "WASHER_MISSING_HEAD_SIDE"]
+    assert result.metrics["assemblyRoleCounts"]["headSideWasher"] == 0
+    assert result.metrics["assemblyRoleCounts"]["nutSideWasher"] == 1
+
+
+def test_both_washers_missing_uses_generic_reason():
+    instances = [
+        _instance(0, "bolt", 0, 40),
+        _instance(0, "bolt", 75, 105, 25, 75),
+        _instance(2, "thread", 105, 190, 40, 60),
+    ]
+
+    result = InspectionDecisionEngine().evaluate(_vision(instances=instances), model_type="test")
+
+    assert result.metrics["componentReasons"] == ["WASHER_MISSING"]
+
+
+def test_single_washer_without_head_geometry_uses_generic_reason():
+    instances = [
+        _instance(1, "washer", 80, 90, 30, 70),
+        _instance(2, "thread", 105, 190, 40, 60),
+    ]
+
+    result = InspectionDecisionEngine().evaluate(_vision(instances=instances), model_type="test")
+
+    assert result.metrics["componentReasons"] == ["NUT_MISSING", "WASHER_MISSING"]
+    assert result.metrics["assemblyRoleCounts"]["unassignedWasher"] == 1
+
+
+def test_single_washer_with_overlapping_head_thread_geometry_uses_generic_reason():
+    engine = InspectionDecisionEngine()
+    head_instance = _instance(0, "bolt", 0, 40)
+    washer_instance = _instance(1, "washer", 45, 55, 30, 70)
+    thread_instance = _instance(2, "thread", 50, 100, 40, 60)
+    head = ProjectedInstance(head_instance, 0.0, 12.0, 6.0, engine._pixels_xy(head_instance))
+    washer = ProjectedInstance(
+        washer_instance, 9.0, 11.0, 10.0, engine._pixels_xy(washer_instance)
+    )
+    thread = ProjectedInstance(
+        thread_instance, 10.0, 30.0, 20.0, engine._pixels_xy(thread_instance)
+    )
+    projected = [head, washer, thread]
+
+    roles = engine.assign_roles(projected, thread)
+    decision = engine.check_components(projected, roles)
+
+    assert roles.head_side_washers == []
+    assert roles.nut_side_washers == []
+    assert decision.reasons == ["NUT_MISSING", "WASHER_MISSING"]
+
+
 def test_judge_rules_reject_non_two_washer_configuration():
     with pytest.raises(ValueError, match="expected_washer_count=2"):
         InspectionDecisionEngine(expected_washer_count=1)

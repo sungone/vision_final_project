@@ -127,6 +127,7 @@ class InspectionDecisionEngine:
             {
                 "componentReasons": component.reasons,
                 "assemblyReasons": component.reasons + sequence.reasons,
+                "assemblyRoleCounts": self._role_counts(projected, roles, len(thread_instances)),
                 "fasteningReasons": fastening.reasons,
                 "reasons": reasons,
                 "fasteningEvaluated": fastening.thread_ratio is not None,
@@ -172,6 +173,24 @@ class InspectionDecisionEngine:
             midpoint = (roles.head.center_t + roles.nut.center_t) / 2.0
             roles.nut_side_washers = [item for item in washers if item.center_t >= midpoint]
             roles.head_side_washers = [item for item in washers if item.center_t < midpoint]
+        elif roles.head is not None:
+            # No seated nut: compare mask edges along the assembly axis so washer
+            # thickness does not bias the role assignment.
+            anchor_values = (roles.head.t0, roles.head.t1, thread.t0, thread.t1)
+            anchor_span = thread.t0 - roles.head.t1
+            if all(math.isfinite(value) for value in anchor_values) and anchor_span > 1e-9:
+                for washer in washers:
+                    washer_values = (washer.t0, washer.t1, washer.center_t)
+                    if not all(math.isfinite(value) for value in washer_values):
+                        continue
+                    if not roles.head.t1 <= washer.center_t <= thread.t0:
+                        continue
+                    distance_to_head = max(0.0, washer.t0 - roles.head.t1)
+                    distance_to_thread = max(0.0, thread.t0 - washer.t1)
+                    if distance_to_head < distance_to_thread:
+                        roles.head_side_washers.append(washer)
+                    elif distance_to_thread < distance_to_head:
+                        roles.nut_side_washers.append(washer)
         return roles
 
     def check_components(
@@ -185,16 +204,34 @@ class InspectionDecisionEngine:
         elif len(bolts) >= 3:
             reasons.append("NUT_EXTRA")
 
-        if len(washers) == 1 and roles.nut is not None:
-            if roles.nut_side_washers:
-                reasons.append("WASHER_MISSING_HEAD_SIDE")
-            else:
-                reasons.append("WASHER_MISSING_NUT_SIDE")
+        if len(washers) == 1 and roles.nut_side_washers:
+            reasons.append("WASHER_MISSING_HEAD_SIDE")
+        elif len(washers) == 1 and roles.head_side_washers:
+            reasons.append("WASHER_MISSING_NUT_SIDE")
+        elif len(washers) == 1:
+            reasons.append("WASHER_MISSING")
         elif len(washers) < self.expected_washer_count:
             reasons.append("WASHER_MISSING")
         elif len(washers) > self.expected_washer_count:
             reasons.append("WASHER_EXTRA")
         return RuleDecision(NORMAL if not reasons else DEFECT, reasons)
+
+    @staticmethod
+    def _role_counts(
+        projected: list[ProjectedInstance], roles: AssignedRoles, thread_count: int
+    ) -> dict[str, int]:
+        washer_count = sum(
+            item.instance.class_name.lower() == "washer" for item in projected
+        )
+        assigned_washer_count = len(roles.head_side_washers) + len(roles.nut_side_washers)
+        return {
+            "boltHead": int(roles.head is not None),
+            "nut": int(roles.nut is not None),
+            "headSideWasher": len(roles.head_side_washers),
+            "nutSideWasher": len(roles.nut_side_washers),
+            "unassignedWasher": max(0, washer_count - assigned_washer_count),
+            "thread": thread_count,
+        }
 
     def check_sequence(self, projected: list[ProjectedInstance]) -> RuleDecision:
         parts = [
