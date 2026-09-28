@@ -27,6 +27,21 @@ def format_live_inspection(result: InspectionResult) -> str:
         f"Fastening Quality    : {result.fastening_quality_result}",
     ]
 
+    role_counts = _get(metrics, "assemblyRoleCounts")
+    if isinstance(role_counts, Mapping):
+        lines.extend(
+            [
+                "",
+                "[Assembly Roles]",
+                f"Bolt Head             : {_text(role_counts.get('boltHead'))}",
+                f"Nut                   : {_text(role_counts.get('nut'))}",
+                f"Head-side Washer      : {_text(role_counts.get('headSideWasher'))}",
+                f"Nut-side Washer       : {_text(role_counts.get('nutSideWasher'))}",
+                f"Unassigned Washer     : {_text(role_counts.get('unassignedWasher'))}",
+                f"Thread                : {_text(role_counts.get('thread'))}",
+            ]
+        )
+
     reasons = _reasons(metrics)
     if result.overall_result == DEFECT:
         lines.extend(["", "Reasons:", *(f"- {reason}" for reason in reasons or ["N/A"])])

@@ -1,410 +1,435 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import math
 
 import cv2
 import numpy as np
 
-from .contracts import DEFECT, NORMAL, NOT_EVALUATED, DetectedInstance, FrameVisionResult, InspectionResult
+from .contracts import (
+    DEFECT,
+    NORMAL,
+    NOT_EVALUATED,
+    DetectedInstance,
+    FrameVisionResult,
+    InspectionResult,
+)
 
 
 @dataclass(slots=True)
-class ProjectedInstance:
+class _Part:
     instance: DetectedInstance
-    t0: float
-    t1: float
-    center_t: float
-    pixels_xy: np.ndarray
+    points: np.ndarray
+    t0: float = 0.0
+    t1: float = 0.0
+    role: str | None = None
 
-
-@dataclass(slots=True)
-class AssignedRoles:
-    head: ProjectedInstance | None = None
-    nut: ProjectedInstance | None = None
-    unseated_nuts: list[ProjectedInstance] = field(default_factory=list)
-    extra_nuts: list[ProjectedInstance] = field(default_factory=list)
-    nut_side_washers: list[ProjectedInstance] = field(default_factory=list)
-    head_side_washers: list[ProjectedInstance] = field(default_factory=list)
-
-
-@dataclass(slots=True)
-class RuleDecision:
-    result: str
-    reasons: list[str] = field(default_factory=list)
-
-
-@dataclass(slots=True)
-class FasteningDecision(RuleDecision):
-    thread_ratio: float | None = None
-    exposed_thread_px: float | None = None
-    gap_ratio: float | None = None
-    gap_px: float | None = None
-    nut_tilt_deg: float | None = None
-    diameter_px: float | None = None
+    @property
+    def center_t(self) -> float:
+        return (self.t0 + self.t1) / 2.0
 
 
 class InspectionDecisionEngine:
-    """Apply the mask-geometry rules used by the offline judge to live detections."""
-
-    EXPECTED_ORDER = ("BOLT", "WASHER", "WASHER", "BOLT")
+    """Apply the original U-NET/measure/judge.py geometry to detected instances."""
 
     def __init__(
         self,
         *,
+        thread_ratio_min: float,
         expected_washer_count: int = 2,
-        thread_exposure_min_ratio: float = 1.36,
         gap_ratio_max: float | None = None,
         bolt_diameter_mm: float | None = None,
     ) -> None:
-        if expected_washer_count != 2:
-            raise ValueError("judge rules require expected_washer_count=2")
-        if not math.isfinite(thread_exposure_min_ratio) or thread_exposure_min_ratio <= 0:
-            raise ValueError("thread_exposure_min_ratio must be positive")
-        if gap_ratio_max is not None and (not math.isfinite(gap_ratio_max) or gap_ratio_max < 0):
+        if expected_washer_count < 0:
+            raise ValueError("expected_washer_count must be non-negative")
+        if thread_ratio_min <= 0:
+            raise ValueError("thread_ratio_min must be positive")
+        if gap_ratio_max is not None and gap_ratio_max < 0:
             raise ValueError("gap_ratio_max must be non-negative")
-        if bolt_diameter_mm is not None and (
-            not math.isfinite(bolt_diameter_mm) or bolt_diameter_mm <= 0
-        ):
+        if bolt_diameter_mm is not None and bolt_diameter_mm <= 0:
             raise ValueError("bolt_diameter_mm must be positive")
         self.expected_washer_count = expected_washer_count
-        self.thread_exposure_min_ratio = thread_exposure_min_ratio
+        self.thread_ratio_min = thread_ratio_min
         self.gap_ratio_max = gap_ratio_max
         self.bolt_diameter_mm = bolt_diameter_mm
 
-    def evaluate(self, vision: FrameVisionResult, *, model_type: str) -> InspectionResult:
-        metrics = self._base_metrics(vision, model_type)
-        thread_instances = [item for item in vision.instances if item.class_name.lower() == "thread"]
-        if not thread_instances:
-            reasons = ["THREAD_MISSING"]
-            metrics.update(
-                {
-                    "componentReasons": reasons,
-                    "assemblyReasons": reasons,
-                    "fasteningReasons": [],
-                    "reasons": reasons,
-                    "fasteningEvaluated": False,
-                    "threadExposureThreshold": self.thread_exposure_min_ratio,
-                    "gapRatioMax": self.gap_ratio_max,
-                }
-            )
-            return InspectionResult(
-                overall_result=DEFECT,
-                missing_component_result=DEFECT,
-                alignment_result=NOT_EVALUATED,
-                fastening_result=NOT_EVALUATED,
-                metrics=metrics,
-                inspection_time=vision.timestamp,
-                vision_result=vision,
-            )
+    def evaluate(
+        self, vision: FrameVisionResult, *, model_type: str
+    ) -> InspectionResult:
+        parts: list[_Part] = []
+        for instance in vision.instances:
+            part = self._part(instance)
+            if len(part.points):
+                parts.append(part)
+        bolts = [part for part in parts if part.instance.class_name == "bolt"]
+        washers = [part for part in parts if part.instance.class_name == "washer"]
+        threads = [part for part in parts if part.instance.class_name == "thread"]
+        reasons: list[dict[str, str]] = []
+        component_result = NORMAL
+        order_result = NORMAL
+        fastening_result = NORMAL
+        measurements: dict[str, float | None] = {
+            "threadWidthPx": None,
+            "threadExposureRatio": None,
+            "threadExposureThreshold": self.thread_ratio_min,
+            "nutWasherGapRatio": None,
+            "nutWasherGapPx": None,
+            "nutTiltDeg": None,
+            "threadExposedMm": None,
+            "nutWasherGapMm": None,
+        }
 
-        thread_instance = max(thread_instances, key=self._pixel_count)
-        axis, perpendicular = self._axis_vectors(vision.instances, thread_instance)
-        projected = [self._project(item, axis) for item in vision.instances]
-        thread = next(item for item in projected if item.instance is thread_instance)
-        diameter_px = self._percentile_width(thread.pixels_xy @ perpendicular, 2.0, 98.0)
-        roles = self.assign_roles(projected, thread)
+        def fail(category: str, code: str, label: str) -> None:
+            nonlocal component_result, order_result, fastening_result
+            if category == "components":
+                component_result = DEFECT
+            elif category == "order":
+                order_result = DEFECT
+            else:
+                fastening_result = DEFECT
+            reasons.append({"category": category, "code": code, "label": label})
 
-        component = self.check_components(projected, roles)
-        sequence = (
-            self.check_sequence(projected)
-            if component.result == NORMAL
-            else RuleDecision(NOT_EVALUATED)
+        thread: _Part | None = None
+        nut: _Part | None = None
+        head: _Part | None = None
+        roles_evaluated = False
+        if not threads:
+            fail("components", "THREAD_MISSING", "나사산 미검출")
+            order_result = NOT_EVALUATED
+            fastening_result = NOT_EVALUATED
+        else:
+            thread = max(threads, key=lambda part: len(part.points))
+            axis, perpendicular = self._estimate_axis(parts, thread)
+            if axis is None or perpendicular is None:
+                fail("components", "AXIS_FAIL", "볼트 축 추정 실패")
+                order_result = NOT_EVALUATED
+                fastening_result = NOT_EVALUATED
+            else:
+                for part in parts:
+                    part.t0, part.t1 = self._span(part.points, axis)
+                projected_width = thread.points @ perpendicular
+                diameter = float(
+                    np.percentile(projected_width, 98)
+                    - np.percentile(projected_width, 2)
+                )
+                measurements["threadWidthPx"] = diameter if diameter > 0 else None
+                nut, head = self._assign_roles(bolts, washers, thread)
+                roles_evaluated = True
+                self._check_components(bolts, washers, nut, fail)
+                if component_result == NORMAL:
+                    self._check_order(bolts, washers, fail)
+                else:
+                    order_result = NOT_EVALUATED
+                if nut is not None and diameter > 0:
+                    measurements.update(
+                        self._measure_fastening(
+                            thread, nut, washers, diameter, perpendicular
+                        )
+                    )
+                    ratio = measurements["threadExposureRatio"]
+                    if isinstance(ratio, float) and ratio < self.thread_ratio_min:
+                        fail(
+                            "fastening",
+                            "LOOSE",
+                            "체결 불량 (나사산 노출 부족)",
+                        )
+                    gap_ratio = measurements["nutWasherGapRatio"]
+                    if (
+                        self.gap_ratio_max is not None
+                        and isinstance(gap_ratio, float)
+                        and gap_ratio > self.gap_ratio_max
+                    ):
+                        fail("fastening", "GAP", "체결 불량 (너트-와셔 틈)")
+                elif any(part.role == "unseated_nut" for part in bolts):
+                    fail(
+                        "fastening",
+                        "NUT_NOT_SEATED",
+                        "체결 불량 (너트 미체결: 나사산 끝에 걸림)",
+                    )
+                else:
+                    fail(
+                        "fastening",
+                        "FASTEN_UNMEASURED",
+                        "체결 상태 판정 불가 (체결된 너트 없음)",
+                    )
+
+        raw_counts = Counter(item.class_name for item in vision.instances)
+        component_counts = self._component_counts(
+            bolts, washers, threads, nut, head, roles_evaluated
         )
-        fastening = self.check_fastening(thread, roles, perpendicular, diameter_px)
-        reasons = component.reasons + sequence.reasons + fastening.reasons
+        reason_codes = [reason["code"] for reason in reasons]
+        metrics: dict[str, object] = {
+            "modelType": model_type,
+            "detectedInstanceCount": len(vision.instances),
+            "inferenceTimeMs": round(vision.inference_time_ms, 2),
+            "detectedCounts": dict(sorted(raw_counts.items())),
+            "detections": [
+                self._serialize_detection(item) for item in vision.instances
+            ],
+            "componentResult": component_result,
+            "assemblySequenceResult": order_result,
+            "fasteningResult": fastening_result,
+            "componentCounts": component_counts,
+            "failureReasons": reason_codes,
+            "failureReasonDetails": reasons,
+            "assemblyReasons": [
+                reason["code"]
+                for reason in reasons
+                if reason["category"] in {"components", "order"}
+            ],
+            "fasteningEvaluated": fastening_result != NOT_EVALUATED,
+            **measurements,
+        }
         overall = (
             NORMAL
-            if component.result == NORMAL
-            and sequence.result == NORMAL
-            and fastening.result == NORMAL
+            if component_result == order_result == fastening_result == NORMAL
             and not reasons
             else DEFECT
         )
-
-        metrics.update(
-            {
-                "componentReasons": component.reasons,
-                "assemblyReasons": component.reasons + sequence.reasons,
-                "fasteningReasons": fastening.reasons,
-                "reasons": reasons,
-                "fasteningEvaluated": fastening.thread_ratio is not None,
-                "threadExposureThreshold": self.thread_exposure_min_ratio,
-                "gapRatioMax": self.gap_ratio_max,
-                "boltDiameterPx": self._rounded(diameter_px, 3),
-            }
-        )
-        self._add_fastening_metrics(metrics, fastening)
         return InspectionResult(
             overall_result=overall,
-            missing_component_result=component.result,
-            alignment_result=sequence.result,
-            fastening_result=fastening.result,
+            missing_component_result=component_result,
+            alignment_result=order_result,
+            fastening_result=fastening_result,
             metrics=metrics,
             inspection_time=vision.timestamp,
             vision_result=vision,
         )
 
-    def assign_roles(
-        self, projected: list[ProjectedInstance], thread: ProjectedInstance
-    ) -> AssignedRoles:
-        bolts = [item for item in projected if item.instance.class_name.lower() == "bolt"]
-        washers = [item for item in projected if item.instance.class_name.lower() == "washer"]
+    @staticmethod
+    def _part(instance: DetectedInstance) -> _Part:
+        if instance.geometry_points is not None:
+            points = np.asarray(instance.geometry_points, dtype=np.float32)
+        else:
+            ys, xs = np.nonzero(instance.mask)
+            points = np.column_stack((xs, ys)).astype(np.float32)
+        return _Part(instance, points)
+
+    @staticmethod
+    def _span(
+        points: np.ndarray, axis: np.ndarray, low: float = 1, high: float = 99
+    ) -> tuple[float, float]:
+        projected = points @ axis
+        return (
+            float(np.percentile(projected, low)),
+            float(np.percentile(projected, high)),
+        )
+
+    @staticmethod
+    def _estimate_axis(
+        parts: list[_Part], thread: _Part
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
+        non_empty = [part.points for part in parts if len(part.points)]
+        if not non_empty or not len(thread.points):
+            return None, None
+        all_points = np.concatenate(non_empty)
+        vector = thread.points.mean(0) - all_points.mean(0)
+        norm = np.linalg.norm(vector)
+        if norm < 1e-3:
+            return None, None
+        axis = vector / norm
+        return axis, np.array([-axis[1], axis[0]])
+
+    @staticmethod
+    def _assign_roles(
+        bolts: list[_Part], washers: list[_Part], thread: _Part
+    ) -> tuple[_Part | None, _Part | None]:
+        thread_start = thread.t0
         below = sorted(
-            (item for item in bolts if item.center_t < thread.t0), key=lambda item: item.center_t
+            [part for part in bolts if part.center_t < thread_start],
+            key=lambda part: -part.t1,
         )
-        outside = sorted(
-            (item for item in bolts if item.center_t >= thread.t0), key=lambda item: item.center_t
-        )
-        roles = AssignedRoles()
-        if len(below) >= 2:
-            roles.head = below[0]
-            roles.nut = below[-1]
-            roles.extra_nuts = below[1:-1] + outside
-        elif len(below) == 1:
-            roles.head = below[0]
-            roles.unseated_nuts = outside
-        else:
-            roles.unseated_nuts = outside
+        nut = below[0] if len(below) >= 2 else None
+        head = below[-1] if below else None
+        beyond_role = "extra_nut" if nut is not None else "unseated_nut"
+        for part in bolts:
+            part.role = (
+                "nut"
+                if part is nut
+                else "head"
+                if part is head
+                else beyond_role
+            )
+        if nut is not None and head is not None:
+            midpoint = (nut.t0 + head.t1) / 2.0
+            for washer in washers:
+                washer.role = (
+                    "nut_side_washer"
+                    if washer.center_t > midpoint
+                    else "head_side_washer"
+                )
+        elif head is not None:
+            anchor_values = (head.t0, head.t1, thread.t0, thread.t1)
+            anchor_span = thread.t0 - head.t1
+            if all(math.isfinite(value) for value in anchor_values) and anchor_span > 1e-9:
+                for washer in washers:
+                    washer_values = (washer.t0, washer.t1, washer.center_t)
+                    if not all(math.isfinite(value) for value in washer_values):
+                        continue
+                    if not head.t1 <= washer.center_t <= thread.t0:
+                        continue
+                    distance_to_head = max(0.0, washer.t0 - head.t1)
+                    distance_to_thread = max(0.0, thread.t0 - washer.t1)
+                    if distance_to_head < distance_to_thread:
+                        washer.role = "head_side_washer"
+                    elif distance_to_thread < distance_to_head:
+                        washer.role = "nut_side_washer"
+        return nut, head
 
-        if roles.head is not None and roles.nut is not None:
-            midpoint = (roles.head.center_t + roles.nut.center_t) / 2.0
-            roles.nut_side_washers = [item for item in washers if item.center_t >= midpoint]
-            roles.head_side_washers = [item for item in washers if item.center_t < midpoint]
-        return roles
-
-    def check_components(
-        self, projected: list[ProjectedInstance], roles: AssignedRoles
-    ) -> RuleDecision:
-        bolts = [item for item in projected if item.instance.class_name.lower() == "bolt"]
-        washers = [item for item in projected if item.instance.class_name.lower() == "washer"]
-        reasons: list[str] = []
-        if len(bolts) < 2:
-            reasons.append("NUT_MISSING")
-        elif len(bolts) >= 3:
-            reasons.append("NUT_EXTRA")
-
-        if len(washers) == 1 and roles.nut is not None:
-            if roles.nut_side_washers:
-                reasons.append("WASHER_MISSING_HEAD_SIDE")
-            else:
-                reasons.append("WASHER_MISSING_NUT_SIDE")
-        elif len(washers) < self.expected_washer_count:
-            reasons.append("WASHER_MISSING")
-        elif len(washers) > self.expected_washer_count:
-            reasons.append("WASHER_EXTRA")
-        return RuleDecision(NORMAL if not reasons else DEFECT, reasons)
-
-    def check_sequence(self, projected: list[ProjectedInstance]) -> RuleDecision:
-        parts = [
-            item
-            for item in projected
-            if item.instance.class_name.lower() in {"bolt", "washer"}
-        ]
-        actual = tuple(item.instance.class_name.upper() for item in sorted(parts, key=lambda x: x.center_t, reverse=True))
-        reasons = [] if actual == self.EXPECTED_ORDER else ["ORDER_INVALID"]
-        return RuleDecision(NORMAL if not reasons else DEFECT, reasons)
-
-    def check_fastening(
+    def _check_components(
         self,
-        thread: ProjectedInstance,
-        roles: AssignedRoles,
-        perpendicular: np.ndarray,
-        diameter_px: float | None,
-    ) -> FasteningDecision:
-        if roles.nut is None:
-            reason = "NUT_NOT_SEATED" if roles.unseated_nuts else "FASTEN_UNMEASURED"
-            return FasteningDecision(DEFECT, [reason], diameter_px=diameter_px)
-        if diameter_px is None or diameter_px <= 0:
-            return FasteningDecision(
-                DEFECT, ["FASTEN_UNMEASURED"], diameter_px=diameter_px
-            )
-
-        exposed_thread_px = max(0.0, thread.t1 - thread.t0)
-        thread_ratio = exposed_thread_px / diameter_px
-        nut_side_washer = (
-            max(roles.nut_side_washers, key=lambda item: item.center_t)
-            if roles.nut_side_washers
-            else None
-        )
-        gap_px = roles.nut.t0 - nut_side_washer.t1 if nut_side_washer is not None else None
-        gap_ratio = gap_px / diameter_px if gap_px is not None else None
-        nut_tilt_deg = self._nut_tilt(roles.nut.pixels_xy, perpendicular)
-        reasons: list[str] = []
-        if (
-            thread_ratio
-            < self.thread_exposure_min_ratio
-            and not math.isclose(
-                thread_ratio,
-                self.thread_exposure_min_ratio,
-                rel_tol=1e-9,
-                abs_tol=1e-9,
-            )
-        ):
-            reasons.append("LOOSE")
-
-        if (
-            self.gap_ratio_max is not None
-            and gap_ratio is not None
-            and gap_ratio > self.gap_ratio_max
-            and not math.isclose(
-                gap_ratio,
-                self.gap_ratio_max,
-                rel_tol=1e-9,
-                abs_tol=1e-9,
-            )
-        ):
-            reasons.append("GAP")
-
-        return FasteningDecision(
-            NORMAL if not reasons else DEFECT,
-            reasons,
-            thread_ratio=thread_ratio,
-            exposed_thread_px=exposed_thread_px,
-            gap_ratio=gap_ratio,
-            gap_px=gap_px,
-            nut_tilt_deg=nut_tilt_deg,
-            diameter_px=diameter_px,
-        )
-
-    def _add_fastening_metrics(
-        self,
-        metrics: dict[str, object],
-        fastening: FasteningDecision,
+        bolts: list[_Part],
+        washers: list[_Part],
+        nut: _Part | None,
+        fail,
     ) -> None:
-        displayed_thread_ratio = self._rounded(
-            fastening.thread_ratio,
-            3,
-        )
-        displayed_gap_ratio = self._rounded(
-            fastening.gap_ratio,
-            3,
-        )
+        if len(bolts) < 2:
+            fail("components", "NUT_MISSING", "너트 누락")
+        elif len(bolts) > 2:
+            fail("components", "NUT_EXTRA", "너트 과다")
+        if len(washers) < self.expected_washer_count:
+            roles = {washer.role for washer in washers}
+            if len(washers) == 1 and "nut_side_washer" in roles:
+                fail(
+                    "components",
+                    "WASHER_MISSING_HEAD_SIDE",
+                    "볼트머리측 와셔 누락",
+                )
+            elif len(washers) == 1 and "head_side_washer" in roles:
+                fail(
+                    "components",
+                    "WASHER_MISSING_NUT_SIDE",
+                    "너트측 와셔 누락",
+                )
+            else:
+                fail(
+                    "components",
+                    "WASHER_MISSING",
+                    f"와셔 누락 ({self.expected_washer_count - len(washers)}개)",
+                )
+        elif len(washers) > self.expected_washer_count:
+            fail("components", "WASHER_EXTRA", "와셔 과다")
 
-        values = {
-            "threadExposureRatio": displayed_thread_ratio,
-            "threadExposurePx": self._rounded(
-                fastening.exposed_thread_px,
-                2,
-            ),
-            "nutWasherGapRatio": displayed_gap_ratio,
-            "nutWasherGapPx": self._rounded(
-                fastening.gap_px,
-                2,
-            ),
-            "nutTiltDeg": self._rounded(
-                fastening.nut_tilt_deg,
-                2,
-            ),
+    @staticmethod
+    def _check_order(
+        bolts: list[_Part], washers: list[_Part], fail
+    ) -> None:
+        sequence = [
+            part.instance.class_name
+            for part in sorted(
+                bolts + washers, key=lambda part: -part.center_t
+            )
+        ]
+        if sequence != ["bolt", "washer", "washer", "bolt"]:
+            fail("order", "ORDER_ERROR", "조립 순서 이상")
+
+    def _measure_fastening(
+        self,
+        thread: _Part,
+        nut: _Part,
+        washers: list[_Part],
+        diameter: float,
+        perpendicular: np.ndarray,
+    ) -> dict[str, float | None]:
+        ratio = (thread.t1 - thread.t0) / diameter
+        result: dict[str, float | None] = {
+            "threadExposureRatio": float(ratio),
         }
-
-        metrics.update(
-            {
-                key: value
-                for key, value in values.items()
-                if value is not None
-            }
+        nut_side = [
+            washer
+            for washer in washers
+            if washer.role == "nut_side_washer"
+        ]
+        if nut_side:
+            washer = max(nut_side, key=lambda part: part.t1)
+            gap_px = nut.t0 - washer.t1
+            result["nutWasherGapPx"] = float(gap_px)
+            result["nutWasherGapRatio"] = float(gap_px / diameter)
+        (_, _), (width, height), angle = cv2.minAreaRect(nut.points)
+        long_angle = np.deg2rad(angle if width >= height else angle + 90)
+        direction = np.array([np.cos(long_angle), np.sin(long_angle)])
+        result["nutTiltDeg"] = float(
+            np.degrees(
+                np.arccos(min(1.0, abs(float(direction @ perpendicular))))
+            )
         )
-
         if self.bolt_diameter_mm is not None:
-            if displayed_thread_ratio is not None:
-                metrics["threadExposureMm"] = round(
-                    displayed_thread_ratio
-                    * self.bolt_diameter_mm,
-                    3,
+            result["threadExposedMm"] = float(
+                ratio * self.bolt_diameter_mm
+            )
+            gap_ratio = result.get("nutWasherGapRatio")
+            if isinstance(gap_ratio, float):
+                result["nutWasherGapMm"] = float(
+                    gap_ratio * self.bolt_diameter_mm
                 )
+        return result
 
-            if displayed_gap_ratio is not None:
-                metrics["nutWasherGapMm"] = round(
-                    displayed_gap_ratio
-                    * self.bolt_diameter_mm,
-                    3,
-                )
-
-    def _base_metrics(self, vision: FrameVisionResult, model_type: str) -> dict[str, object]:
-        counts = Counter(item.class_name for item in vision.instances)
+    @staticmethod
+    def _component_counts(
+        bolts: list[_Part],
+        washers: list[_Part],
+        threads: list[_Part],
+        nut: _Part | None,
+        head: _Part | None,
+        roles_evaluated: bool,
+    ) -> dict[str, int | None]:
+        if not roles_evaluated:
+            return {
+                "bolt": None,
+                "nut": None,
+                "upperWasher": None,
+                "lowerWasher": None,
+                "nutSideWasher": None,
+                "headSideWasher": None,
+                "thread": int(bool(threads)),
+            }
+        washer_roles = {"head_side_washer", "nut_side_washer"}
+        washer_roles_available = head is not None and all(
+            part.role in washer_roles for part in washers
+        )
         return {
-            "modelType": model_type,
-            "detectedInstanceCount": len(vision.instances),
-            "inferenceTimeMs": round(vision.inference_time_ms, 2),
-            "detectedCounts": dict(sorted(counts.items())),
-            "detections": [self._serialize_detection(item) for item in vision.instances],
-            "threadExposureRatio": None,
-            "threadExposurePx": None,
-            "nutWasherGapRatio": None,
-            "nutWasherGapPx": None,
-            "nutTiltDeg": None,
+            "bolt": int(head is not None),
+            "nut": int(
+                nut is not None
+                or any(part.role == "unseated_nut" for part in bolts)
+            ),
+            "upperWasher": (
+                sum(part.role == "head_side_washer" for part in washers)
+                if washer_roles_available
+                else None
+            ),
+            "lowerWasher": (
+                sum(part.role == "nut_side_washer" for part in washers)
+                if washer_roles_available
+                else None
+            ),
+            "nutSideWasher": (
+                sum(part.role == "nut_side_washer" for part in washers)
+                if washer_roles_available
+                else None
+            ),
+            "headSideWasher": (
+                sum(part.role == "head_side_washer" for part in washers)
+                if washer_roles_available
+                else None
+            ),
+            "unassignedWasher": sum(part.role not in washer_roles for part in washers),
+            "thread": int(bool(threads)),
         }
 
-    @classmethod
-    def _axis_vectors(
-        cls, instances: list[DetectedInstance], thread: DetectedInstance
-    ) -> tuple[np.ndarray, np.ndarray]:
-        all_pixels = np.concatenate([cls._pixels_xy(item) for item in instances], axis=0)
-        all_center = np.mean(all_pixels, axis=0)
-        thread_center = np.mean(cls._pixels_xy(thread), axis=0)
-        axis = thread_center - all_center
-        norm = float(np.linalg.norm(axis))
-        if norm <= 1e-9:
-            axis = np.array([0.0, 1.0], dtype=np.float64)
-        else:
-            axis = axis / norm
-        return axis, np.array([-axis[1], axis[0]], dtype=np.float64)
-
-    @classmethod
-    def _project(cls, instance: DetectedInstance, axis: np.ndarray) -> ProjectedInstance:
-        pixels_xy = cls._pixels_xy(instance)
-        values = pixels_xy @ axis
-        t0, t1 = np.percentile(values, [1.0, 99.0])
-        center_t = float(np.asarray(instance.center, dtype=np.float64) @ axis)
-        return ProjectedInstance(instance, float(t0), float(t1), center_t, pixels_xy)
-
     @staticmethod
-    def _pixels_xy(instance: DetectedInstance) -> np.ndarray:
-        rows, columns = np.nonzero(instance.mask)
-        if rows.size:
-            return np.column_stack((columns, rows)).astype(np.float64)
-        return np.asarray([instance.center], dtype=np.float64)
-
-    @staticmethod
-    def _percentile_width(values: np.ndarray, low: float, high: float) -> float | None:
-        if values.size < 2:
-            return None
-        start, end = np.percentile(values, [low, high])
-        width = float(end - start)
-        return width if width > 0 else None
-
-    @staticmethod
-    def _nut_tilt(pixels_xy: np.ndarray, perpendicular: np.ndarray) -> float | None:
-        if len(pixels_xy) < 3:
-            return None
-        rectangle = cv2.minAreaRect(pixels_xy.astype(np.float32))
-        box = cv2.boxPoints(rectangle).astype(np.float64)
-        edges = np.roll(box, -1, axis=0) - box
-        lengths = np.linalg.norm(edges, axis=1)
-        long_edge = edges[int(np.argmax(lengths))]
-        length = float(np.linalg.norm(long_edge))
-        if length <= 1e-9:
-            return None
-        cosine = float(np.clip(abs(np.dot(long_edge / length, perpendicular)), 0.0, 1.0))
-        return float(np.degrees(np.arccos(cosine)))
-
-    @staticmethod
-    def _pixel_count(instance: DetectedInstance) -> int:
-        return int(np.count_nonzero(instance.mask)) or instance.area_px
-
-    @staticmethod
-    def _rounded(value: float | None, precision: int) -> float | None:
-        return None if value is None else round(float(value), precision)
-
-    @staticmethod
-    def _serialize_detection(instance: DetectedInstance) -> dict[str, object]:
+    def _serialize_detection(
+        instance: DetectedInstance,
+    ) -> dict[str, object]:
         return {
             "classId": instance.class_id,
             "className": instance.class_name,
             "confidence": round(instance.confidence, 4),
             "bbox": list(instance.bbox),
-            "center": [round(instance.center[0], 2), round(instance.center[1], 2)],
+            "center": [
+                round(instance.center[0], 2),
+                round(instance.center[1], 2),
+            ],
             "areaPx": instance.area_px,
         }

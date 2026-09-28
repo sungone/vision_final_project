@@ -12,7 +12,6 @@ from app.camera.frame_buffer import LatestFrameBuffer, LatestValueBuffer
 from app.inspection.event_manager import InspectionEventManager
 
 from .contracts import InspectionResult, VisionProcessor
-from .live_result_logger import LiveInspectionLogger
 
 
 logger = logging.getLogger(__name__)
@@ -30,9 +29,6 @@ class VisionWorker:
         event_callback: Callable[[InspectionResult], None],
         fps: float,
         jpeg_quality: int,
-        live_log_enabled: bool = False,
-        live_log_interval: float = 1.0,
-        live_log_target: logging.Logger | None = None,
     ) -> None:
         self.raw_frames = raw_frames
         self.processed_frames = processed_frames
@@ -43,9 +39,6 @@ class VisionWorker:
         self.event_callback = event_callback
         self.fps = max(0.1, fps)
         self.jpeg_quality = jpeg_quality
-        self.live_result_logger = LiveInspectionLogger(
-            live_log_enabled, live_log_interval, target_logger=live_log_target
-        )
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self.running = False
@@ -83,8 +76,19 @@ class VisionWorker:
                 last_version = snapshot.version
                 next_allowed = time.monotonic() + interval
                 try:
-                    processing_started_at = time.perf_counter()
+                    processing_started = time.perf_counter()
                     result = self.processor.process(snapshot.value)
+                    completed_at = time.monotonic()
+                    result.metrics["processingTimeMs"] = round(
+                        (time.perf_counter() - processing_started) * 1000.0, 2
+                    )
+                    result.metrics["visionFps"] = (
+                        round(1.0 / (completed_at - self._last_completed_at), 2)
+                        if self._last_completed_at is not None
+                        and completed_at > self._last_completed_at
+                        else None
+                    )
+                    self._last_completed_at = completed_at
                     if result.processed_frame is None:
                         result.processed_frame = snapshot.value
                     ok, encoded = cv2.imencode(
@@ -92,15 +96,6 @@ class VisionWorker:
                     )
                     if not ok:
                         raise RuntimeError("JPEG encoding failed")
-                    completed_at = time.perf_counter()
-                    result.metrics["processingTimeMs"] = round(
-                        (completed_at - processing_started_at) * 1000.0, 2
-                    )
-                    if self._last_completed_at is not None:
-                        completion_interval = completed_at - self._last_completed_at
-                        if completion_interval > 0:
-                            result.metrics["visionFps"] = round(1.0 / completion_interval, 2)
-                    self._last_completed_at = completed_at
                     self.processed_frames.put(result.processed_frame, result.inspection_time)
                     self.encoded_frames.put(encoded.tobytes(), result.inspection_time)
                     self.latest_results.put(result, result.inspection_time)
@@ -108,19 +103,13 @@ class VisionWorker:
                     self.last_inference_time_ms = result.metrics.get("inferenceTimeMs")
                     self.last_detection_count = result.metrics.get("detectedInstanceCount")
                     self.last_error = None
-                    try:
-                        event = self.event_manager.consume(result)
-                        if event is not None:
-                            try:
-                                self.event_callback(event)
-                            except Exception:
-                                self.event_manager.mark_event_delivery_failed()
-                                raise
-                    finally:
+                    event = self.event_manager.consume(result)
+                    if event is not None:
                         try:
-                            self.live_result_logger.maybe_log(result)
+                            self.event_callback(event)
                         except Exception:
-                            logger.exception("live inspection logging failed")
+                            self.event_manager.mark_event_delivery_failed()
+                            raise
                 except Exception as exc:
                     self.last_error = str(exc)
                     logger.exception("vision frame processing failed")

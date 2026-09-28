@@ -67,9 +67,9 @@ class InspectionVisualizer:
         )
         measured = inspection.metrics.get("threadExposureRatio")
         threshold = inspection.metrics.get("threadExposureThreshold")
-        reasons = inspection.metrics.get("reasons") or []
+        reasons = inspection.metrics.get("failureReasons") or []
         detail = (
-            f"THREAD/D: {measured:.2f} | MIN: {threshold:.2f}"
+            f"THREAD RATIO: {measured:.2f} | MIN: {threshold:.2f}"
             if isinstance(measured, (int, float)) and isinstance(threshold, (int, float))
             else f"REASON: {','.join(str(item) for item in reasons) or 'not evaluated'}"
         )

@@ -1,114 +1,138 @@
-from __future__ import annotations
-
+import time
 from datetime import datetime, timezone
 
+import cv2
 import numpy as np
 
 from app.camera import LatestFrameBuffer, LatestValueBuffer
-from app.vision import InspectionResult
+from app.inspection import InspectionEventManager
+from app.vision import DEFECT, NORMAL, InspectionResult
 from app.vision.worker import VisionWorker
 
 
-class _Processor:
+class PixelResultProcessor:
     def process(self, frame: np.ndarray) -> InspectionResult:
+        is_defect = int(frame[0, 0, 0]) > 0
+        outcome = DEFECT if is_defect else NORMAL
+        processed = np.full_like(frame, 210 if is_defect else 80)
         return InspectionResult(
-            processed_frame=frame,
+            overall_result=outcome,
+            missing_component_result=outcome,
+            alignment_result=NORMAL,
+            fastening_result=NORMAL,
+            metrics={"inferenceTimeMs": 4.2, "detectedInstanceCount": 1},
+            processed_frame=processed,
             inspection_time=datetime.now(timezone.utc),
-            metrics={"inferenceTimeMs": 4.2, "detectedInstanceCount": 0},
         )
 
 
-class _EventManager:
+class StepClock:
     def __init__(self) -> None:
-        self.consumed: list[InspectionResult] = []
+        self.value = 0.0
 
-    def consume(self, result: InspectionResult):
-        self.consumed.append(result)
-        return None
-
-
-class _LogProbe:
-    def __init__(self, latest_results: LatestValueBuffer[InspectionResult]) -> None:
-        self.latest_results = latest_results
-        self.logged: list[InspectionResult] = []
-
-    def maybe_log(self, result: InspectionResult) -> bool:
-        snapshot = self.latest_results.get(timeout=0)
-        assert snapshot is not None
-        assert snapshot.value is result
-        self.logged.append(result)
-        return True
+    def __call__(self) -> float:
+        self.value += 1.0
+        return self.value
 
 
-class _FailingLogProbe:
-    def maybe_log(self, result: InspectionResult) -> bool:
-        raise RuntimeError("console unavailable")
+def _event_manager(*, reset_frames: int):
+    return InspectionEventManager(
+        reset_frames=reset_frames,
+        sample_fps=1.0,
+        geometry_tolerance_ratio=0.05,
+        clock=StepClock(),
+    )
 
 
-def test_worker_enriches_and_logs_same_result_after_latest_buffer_put():
-    raw_frames = LatestFrameBuffer()
-    processed_frames = LatestFrameBuffer()
-    encoded_frames: LatestValueBuffer[bytes] = LatestValueBuffer()
-    latest_results: LatestValueBuffer[InspectionResult] = LatestValueBuffer()
-    events = _EventManager()
+def _worker(event_manager, callback):
+    raw = LatestFrameBuffer()
+    processed = LatestFrameBuffer()
+    encoded = LatestValueBuffer[bytes]()
+    latest = LatestValueBuffer[InspectionResult]()
     worker = VisionWorker(
-        raw_frames,
-        processed_frames,
-        encoded_frames,
-        latest_results,
-        _Processor(),
-        events,  # type: ignore[arg-type]
-        lambda result: None,
+        raw,
+        processed,
+        encoded,
+        latest,
+        PixelResultProcessor(),
+        event_manager,
+        callback,
         fps=100.0,
         jpeg_quality=80,
     )
-    probe = _LogProbe(latest_results)
-    worker.live_result_logger = probe  # type: ignore[assignment]
-
-    worker.start()
-    try:
-        raw_frames.put(np.zeros((16, 16, 3), dtype=np.uint8))
-        first = latest_results.get(after_version=0, timeout=2.0)
-        assert first is not None
-        raw_frames.put(np.ones((16, 16, 3), dtype=np.uint8))
-        second = latest_results.get(after_version=first.version, timeout=2.0)
-        assert second is not None
-    finally:
-        worker.stop()
-
-    assert second.value.metrics["processingTimeMs"] >= 0
-    assert second.value.metrics["visionFps"] > 0
-    assert probe.logged[-1] is second.value
-    assert events.consumed[-1] is second.value
+    return worker, raw, processed, encoded, latest
 
 
-def test_live_log_failure_does_not_block_event_manager():
-    raw_frames = LatestFrameBuffer()
-    latest_results: LatestValueBuffer[InspectionResult] = LatestValueBuffer()
-    events = _EventManager()
-    worker = VisionWorker(
-        raw_frames,
-        LatestFrameBuffer(),
-        LatestValueBuffer(),
-        latest_results,
-        _Processor(),
-        events,  # type: ignore[arg-type]
-        lambda result: None,
-        fps=100.0,
-        jpeg_quality=80,
+def _put_and_wait(raw, encoded, value: int, after_version: int):
+    raw.put(np.full((32, 48, 3), value, dtype=np.uint8))
+    snapshot = encoded.get(after_version=after_version, timeout=2.0)
+    assert snapshot is not None
+    return snapshot
+
+
+def test_worker_processes_raw_frame_once_and_updates_latest_jpeg_buffer():
+    events = []
+    worker, raw, processed, encoded, latest = _worker(
+        _event_manager(reset_frames=1), events.append
     )
-    worker.live_result_logger = _FailingLogProbe()  # type: ignore[assignment]
-
     worker.start()
     try:
-        raw_frames.put(np.zeros((16, 16, 3), dtype=np.uint8))
-        snapshot = latest_results.get(after_version=0, timeout=2.0)
-        assert snapshot is not None
-        for _ in range(100):
-            if events.consumed:
-                break
-            worker._stop.wait(0.01)
+        jpeg = _put_and_wait(raw, encoded, 0, 0)
+        assert jpeg.value.startswith(b"\xff\xd8")
+        assert jpeg.value.endswith(b"\xff\xd9")
+        decoded = cv2.imdecode(np.frombuffer(jpeg.value, dtype=np.uint8), cv2.IMREAD_COLOR)
+        assert decoded.shape == (32, 48, 3)
+        assert processed.version == 1
+        assert latest.get(timeout=0).value.overall_result == NORMAL
+        assert latest.get(timeout=0).value.metrics["processingTimeMs"] >= 0
+        assert latest.get(timeout=0).value.metrics["visionFps"] is None
+        assert events == []
+    finally:
+        worker.stop()
+    assert worker.running is False
+
+
+def test_worker_emits_one_event_per_defect_episode():
+    events = []
+    manager = _event_manager(reset_frames=2)
+    worker, raw, _, encoded, _ = _worker(manager, events.append)
+    worker.start()
+    version = 0
+    try:
+        for value in (1, 1, 1):
+            snapshot = _put_and_wait(raw, encoded, value, version)
+            version = snapshot.version
+        assert len(events) == 1
+
+        for value in (0, 0, 1, 1):
+            snapshot = _put_and_wait(raw, encoded, value, version)
+            version = snapshot.version
+        assert len(events) == 2
     finally:
         worker.stop()
 
-    assert events.consumed[-1] is snapshot.value
+
+def test_event_callback_failure_does_not_stop_vision_worker():
+    callback_calls = []
+
+    def failing_callback(result):
+        callback_calls.append(result)
+        raise RuntimeError("database unavailable")
+
+    worker, raw, _, encoded, _ = _worker(
+        _event_manager(reset_frames=1), failing_callback
+    )
+    worker.start()
+    try:
+        first = _put_and_wait(raw, encoded, 1, 0)
+        deadline = time.monotonic() + 2.0
+        while worker.last_error is None and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert "database unavailable" in (worker.last_error or "")
+
+        second = _put_and_wait(raw, encoded, 0, first.version)
+        assert second.version > first.version
+        assert worker.running is True
+        assert len(callback_calls) == 1
+    finally:
+        worker.stop()

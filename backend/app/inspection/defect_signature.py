@@ -26,7 +26,16 @@ class DefectSignature:
         metrics = result.metrics or {}
         detections = _canonical_detections(metrics.get("detections"))
         counts = _detected_counts(metrics.get("detectedCounts"), detections)
-        reasons = tuple(sorted({str(reason) for reason in metrics.get("assemblyReasons", [])}))
+        reasons = tuple(
+            sorted(
+                {
+                    str(reason)
+                    for reason in metrics.get(
+                        "failureReasons", metrics.get("assemblyReasons", [])
+                    )
+                }
+            )
+        )
         return cls(
             overall_result=result.overall_result,
             missing_component_result=result.missing_component_result,
@@ -151,10 +160,16 @@ def _geometry_features(
                 )
             )
 
-    measured = _finite_float((result.metrics or {}).get("measuredThreadCm"))
-    threshold = _finite_float((result.metrics or {}).get("threadThresholdCm"))
-    if measured is not None and threshold is not None and threshold > 0:
-        features.append(("fastening.thread_ratio", measured / threshold))
+    metrics = result.metrics or {}
+    thread_ratio = _finite_float(metrics.get("threadExposureRatio"))
+    gap_ratio = _finite_float(metrics.get("nutWasherGapRatio"))
+    nut_tilt = _finite_float(metrics.get("nutTiltDeg"))
+    if thread_ratio is not None:
+        features.append(("fastening.thread_ratio", thread_ratio))
+    if gap_ratio is not None:
+        features.append(("fastening.gap_ratio", gap_ratio))
+    if nut_tilt is not None:
+        features.append(("fastening.nut_tilt_deg", nut_tilt))
     return tuple(features)
 
 

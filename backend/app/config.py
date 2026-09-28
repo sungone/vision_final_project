@@ -102,8 +102,10 @@ class Config:
     CAMERA_RECONNECT_SECONDS = _float("CAMERA_RECONNECT_SECONDS", 2.0)
 
     VISION_FPS = _float("VISION_FPS", 10.0)
-    VISION_LIVE_LOG = _bool("VISION_LIVE_LOG", False)
-    VISION_LIVE_LOG_INTERVAL = max(0.0, _float("VISION_LIVE_LOG_INTERVAL", 1.0))
+    VISION_LIVE_CONSOLE = _bool("VISION_LIVE_CONSOLE", False)
+    VISION_CONSOLE_REFRESH_FPS = max(
+        0.1, _float("VISION_CONSOLE_REFRESH_FPS", 4.0)
+    )
     STREAM_FPS = _float("STREAM_FPS", 10.0)
     JPEG_QUALITY = min(100, max(1, _int("JPEG_QUALITY", 80)))
     VISION_PROCESSOR = os.getenv("VISION_PROCESSOR", "unet").strip().lower()
@@ -120,8 +122,23 @@ class Config:
     DRAW_BOUNDING_BOXES = _bool("DRAW_BOUNDING_BOXES", True)
     DRAW_INFERENCE_STATS = _bool("DRAW_INFERENCE_STATS", True)
     EXPECTED_WASHER_COUNT = max(0, _int("EXPECTED_WASHER_COUNT", 2))
-    THREAD_EXPOSURE_MIN_RATIO = _strict_float("THREAD_EXPOSURE_MIN_RATIO", 1.36)
-    GAP_RATIO_MAX = _optional_float("GAP_RATIO_MAX")
+    DECISION_THRESHOLDS_PATH = _path(
+        "DECISION_THRESHOLDS_PATH",
+        PROJECT_DIR / "U-NET" / "U-NET" / "thresholds.json",
+        BASE_DIR,
+    )
+    THREAD_EXPOSURE_MIN_RATIO = max(
+        0.001, _strict_float("THREAD_EXPOSURE_MIN_RATIO", 1.36)
+    )
+    THREAD_EXPOSURE_MIN_RATIO_FROM_ENV = (
+        os.getenv("THREAD_EXPOSURE_MIN_RATIO") is not None
+    )
+    NUT_WASHER_GAP_MAX_RATIO = _optional_float(
+        "NUT_WASHER_GAP_MAX_RATIO"
+    )
+    NUT_WASHER_GAP_MAX_RATIO_FROM_ENV = (
+        os.getenv("NUT_WASHER_GAP_MAX_RATIO") is not None
+    )
     BOLT_DIAMETER_MM = _optional_float("BOLT_DIAMETER_MM")
     UNET_FINE_MODEL_PATH = _path(
         "UNET_FINE_MODEL_PATH", PROJECT_DIR / "output" / "u-net" / "fine" / "best.pt", BASE_DIR
@@ -129,10 +146,13 @@ class Config:
     UNET_LOCATOR_MODEL_PATH = _path(
         "UNET_LOCATOR_MODEL_PATH", PROJECT_DIR / "output" / "u-net" / "locator" / "best.pt", BASE_DIR
     )
-    UNET_IMAGE_SIZE = max(32, _int("UNET_IMAGE_SIZE", 640))
-    UNET_ROI_MARGIN_RATIO = max(0.0, _float("UNET_ROI_MARGIN_RATIO", 0.15))
+    UNET_LOCATOR_WIDTH = max(32, _int("UNET_LOCATOR_WIDTH", 512))
+    UNET_FINE_SIZE = max(32, _int("UNET_FINE_SIZE", 512))
+    UNET_ROI_MARGIN = max(1.0, _float("UNET_ROI_MARGIN", 1.3))
+    UNET_ROI_MIN_SIDE = max(1, _int("UNET_ROI_MIN_SIDE", 256))
+    UNET_ROI_SMOOTH = min(1.0, max(0.0, _float("UNET_ROI_SMOOTH", 0.5)))
     UNET_USE_LOCATOR = _bool("UNET_USE_LOCATOR", True)
-    UNET_MIN_COMPONENT_AREA = max(1, _int("UNET_MIN_COMPONENT_AREA", 500))
+    UNET_MIN_COMPONENT_AREA = max(1, _int("UNET_MIN_COMPONENT_AREA", 150))
     UNET_USE_HALF = _bool("UNET_USE_HALF", True)
     YOLO26_MODEL_PATH = _path(
         "YOLO26_MODEL_PATH", PROJECT_DIR / "output" / "yolo26" / "best.pt", BASE_DIR

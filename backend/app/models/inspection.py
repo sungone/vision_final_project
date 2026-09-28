@@ -34,6 +34,7 @@ class Inspection(db.Model):
             "id": self.id,
             "inspectionTime": _iso(self.inspection_time),
             "overallResult": self.overall_result,
+            "componentResult": self.missing_component_result,
             "assemblySequenceResult": self.alignment_result,
             "fasteningQualityResult": self.fastening_result,
             "missingComponentResult": self.missing_component_result,

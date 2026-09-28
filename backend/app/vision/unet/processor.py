@@ -27,8 +27,12 @@ class UNetVisionProcessor:
         return self.predictor.device_name
 
     def process(self, frame: np.ndarray) -> InspectionResult:
-        class_map, probabilities, inference_time_ms = self.predictor.predict(frame)
-        vision_result = self.postprocessor.process(class_map, probabilities, inference_time_ms)
-        inspection = self.decision_engine.evaluate(vision_result, model_type="u-net-resnet18")
-        inspection.processed_frame = self.visualizer.render(frame, vision_result, inspection)
+        prediction = self.predictor.predict(frame)
+        vision_result = self.postprocessor.process_prediction(prediction)
+        inspection = self.decision_engine.evaluate(
+            vision_result, model_type=f"u-net-{self.predictor.encoder_name}"
+        )
+        inspection.processed_frame = self.visualizer.render(
+            prediction.frame, vision_result, inspection
+        )
         return inspection
