@@ -48,6 +48,7 @@ def test_latest_inspection_returns_runtime_result_without_database_record(app, c
     assert set(response.get_json()) == {
         "inspectionTime",
         "overallResult",
+        "componentResult",
         "assemblySequenceResult",
         "fasteningQualityResult",
         "missingComponentResult",

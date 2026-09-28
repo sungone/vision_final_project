@@ -46,6 +46,7 @@ class VisionWorker:
         self.last_inference_time_ms: float | None = None
         self.last_detection_count: int | None = None
         self.last_error: str | None = None
+        self._last_completed_at: float | None = None
 
     def start(self) -> None:
         if self._thread and self._thread.is_alive():
@@ -75,7 +76,19 @@ class VisionWorker:
                 last_version = snapshot.version
                 next_allowed = time.monotonic() + interval
                 try:
+                    processing_started = time.perf_counter()
                     result = self.processor.process(snapshot.value)
+                    completed_at = time.monotonic()
+                    result.metrics["processingTimeMs"] = round(
+                        (time.perf_counter() - processing_started) * 1000.0, 2
+                    )
+                    result.metrics["visionFps"] = (
+                        round(1.0 / (completed_at - self._last_completed_at), 2)
+                        if self._last_completed_at is not None
+                        and completed_at > self._last_completed_at
+                        else None
+                    )
+                    self._last_completed_at = completed_at
                     if result.processed_frame is None:
                         result.processed_frame = snapshot.value
                     ok, encoded = cv2.imencode(

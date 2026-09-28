@@ -22,6 +22,7 @@ class DetectedInstance:
     contour: np.ndarray | None
     center: tuple[float, float]
     area_px: int
+    geometry_points: np.ndarray | None = None
 
 
 @dataclass(slots=True)
@@ -49,6 +50,10 @@ class InspectionResult:
 
     @property
     def assembly_sequence_result(self) -> str:
+        return self.alignment_result
+
+    @property
+    def component_result(self) -> str:
         return self.missing_component_result
 
     @property
@@ -59,6 +64,7 @@ class InspectionResult:
         return {
             "inspectionTime": self.inspection_time.isoformat(),
             "overallResult": self.overall_result,
+            "componentResult": self.component_result,
             "assemblySequenceResult": self.assembly_sequence_result,
             "fasteningQualityResult": self.fastening_quality_result,
             "missingComponentResult": self.missing_component_result,

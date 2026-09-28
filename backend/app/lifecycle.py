@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import atexit
+import json
 import logging
 import threading
+from pathlib import Path
 
 from flask import Flask
 
@@ -11,6 +13,7 @@ from app.inspection import InspectionEventManager, InspectionPersistenceWorker, 
 from app.repositories import InspectionRepository
 from app.vision.contracts import InspectionResult
 from app.vision.decision_engine import InspectionDecisionEngine
+from app.vision.live_console import LiveInspectionConsole
 from app.vision.mask_rcnn import (
     MaskRCNNPredictor,
     MaskRCNNVisionProcessor,
@@ -68,6 +71,14 @@ class Runtime:
             self.persistence.submit,
             app.config["VISION_FPS"],
             app.config["JPEG_QUALITY"],
+        )
+        self.live_console = (
+            LiveInspectionConsole(
+                self.latest_results,
+                app.config["VISION_CONSOLE_REFRESH_FPS"],
+            )
+            if app.config["VISION_LIVE_CONSOLE"]
+            else None
         )
 
     def _build_processor(self):
@@ -158,10 +169,13 @@ class Runtime:
             self.app.config["UNET_FINE_MODEL_PATH"],
             self.app.config["UNET_LOCATOR_MODEL_PATH"],
             self.app.config["VISION_DEVICE"],
-            self.app.config["UNET_IMAGE_SIZE"],
-            self.app.config["UNET_ROI_MARGIN_RATIO"],
+            self.app.config["UNET_LOCATOR_WIDTH"],
+            self.app.config["UNET_FINE_SIZE"],
+            self.app.config["UNET_ROI_MARGIN"],
+            self.app.config["UNET_ROI_MIN_SIDE"],
             self.app.config["UNET_USE_LOCATOR"],
             self.app.config["UNET_USE_HALF"],
+            self.app.config["UNET_ROI_SMOOTH"],
         )
         processor = UNetVisionProcessor(
             predictor,
@@ -182,13 +196,28 @@ class Runtime:
         return processor
 
     def _build_decision_engine(self) -> InspectionDecisionEngine:
+        thread_ratio_min = self.app.config["THREAD_EXPOSURE_MIN_RATIO"]
+        gap_ratio_max = self.app.config["NUT_WASHER_GAP_MAX_RATIO"]
+        threshold_path = Path(self.app.config["DECISION_THRESHOLDS_PATH"])
+        if threshold_path.is_file():
+            with threshold_path.open(encoding="utf-8") as handle:
+                configured = json.load(handle)
+            thread_ratio_min = float(
+                configured.get("thread_ratio_min", thread_ratio_min)
+            )
+            configured_gap = configured.get("gap_ratio_max", gap_ratio_max)
+            gap_ratio_max = (
+                None if configured_gap is None else float(configured_gap)
+            )
+        if self.app.config["THREAD_EXPOSURE_MIN_RATIO_FROM_ENV"]:
+            thread_ratio_min = self.app.config["THREAD_EXPOSURE_MIN_RATIO"]
+        if self.app.config["NUT_WASHER_GAP_MAX_RATIO_FROM_ENV"]:
+            gap_ratio_max = self.app.config["NUT_WASHER_GAP_MAX_RATIO"]
         return InspectionDecisionEngine(
             expected_washer_count=self.app.config["EXPECTED_WASHER_COUNT"],
-            reference_head_cm=self.app.config["REFERENCE_HEAD_CM"],
-            reference_nut_cm=self.app.config["REFERENCE_NUT_CM"],
-            reference_washer_cm=self.app.config["REFERENCE_WASHER_CM"],
-            full_thread_cm=self.app.config["FULL_THREAD_CM"],
-            tightness_min_ratio=self.app.config["TIGHTNESS_MIN_RATIO"],
+            thread_ratio_min=thread_ratio_min,
+            gap_ratio_max=gap_ratio_max,
+            bolt_diameter_mm=self.app.config["BOLT_DIAMETER_MM"],
         )
 
     def start(self) -> None:
@@ -199,11 +228,15 @@ class Runtime:
             self.persistence.start()
             self.camera.start()
             self.vision.start()
+            if self.live_console is not None:
+                self.live_console.start()
 
     def stop(self) -> None:
         with self._lock:
             if not self._started:
                 return
+            if self.live_console is not None:
+                self.live_console.stop()
             self.vision.stop()
             self.camera.stop()
             self.persistence.stop()

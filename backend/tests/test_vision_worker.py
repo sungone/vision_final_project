@@ -84,6 +84,8 @@ def test_worker_processes_raw_frame_once_and_updates_latest_jpeg_buffer():
         assert decoded.shape == (32, 48, 3)
         assert processed.version == 1
         assert latest.get(timeout=0).value.overall_result == NORMAL
+        assert latest.get(timeout=0).value.metrics["processingTimeMs"] >= 0
+        assert latest.get(timeout=0).value.metrics["visionFps"] is None
         assert events == []
     finally:
         worker.stop()
