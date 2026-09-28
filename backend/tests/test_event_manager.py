@@ -35,7 +35,7 @@ def _defect(
     bolt_count: int = 2,
     washer_count: int = 1,
     thread_count: int = 1,
-    reasons: tuple[str, ...] = ("washer_count_1",),
+    reasons: tuple[str, ...] = ("washer_low(1)",),
     washer_y: float = 160.0,
     thread_length: float = 180.0,
 ) -> InspectionResult:
@@ -162,12 +162,12 @@ def test_categorical_defect_change_is_new_event():
     missing_washer = _sample(
         manager,
         clock,
-        _defect(washer_count=0, reasons=("washer_count_0",)),
+        _defect(washer_count=0, reasons=("washer_low(0)",)),
     )
     no_bolt = _sample(
         manager,
         clock,
-        _defect(bolt_count=0, reasons=("no_bolt", "washer_count_0"), washer_count=0),
+        _defect(bolt_count=0, reasons=("no_bolt", "washer_low(0)"), washer_count=0),
     )
 
     assert missing_washer is not None

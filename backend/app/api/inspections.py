@@ -60,4 +60,3 @@ def inspection_image(inspection_id: int):
     if storage_root not in image_path.parents or not image_path.is_file():
         abort(404)
     return send_file(image_path, conditional=True)
-

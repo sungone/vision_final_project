@@ -68,35 +68,40 @@ Returns a minimal HTML page containing an `<img>` linked to `/api/v1/stream`. It
 
 ### `GET /api/v1/inspection/latest`
 
-Returns the most recent in-memory `InspectionResult` produced by the Vision worker. This
-endpoint is independent of EventManager deduplication and database persistence. It returns
-`204 No Content` until the worker completes its first frame.
+Returns the most recent in-memory InspectionResult produced by VisionWorker.
+It reads Runtime.latest_results and does not query PostgreSQL or invoke EventManager.
 
 ```json
 {
   "inspectionTime": "2026-09-22T20:10:32+09:00",
   "overallResult": "DEFECT",
-  "assemblySequenceResult": "DEFECT",
-  "fasteningQualityResult": "NOT_EVALUATED",
-  "missingComponentResult": "DEFECT",
+  "assemblySequenceResult": "NORMAL",
+  "fasteningQualityResult": "DEFECT",
+  "missingComponentResult": "NORMAL",
   "alignmentResult": "NOT_EVALUATED",
-  "fasteningResult": "NOT_EVALUATED",
+  "fasteningResult": "DEFECT",
   "metrics": {
     "modelType": "u-net-resnet18",
-    "detectedInstanceCount": 4,
-    "threadExposureRatio": 1.42,
-    "threadExposureThreshold": 1.36,
-    "visionFps": 9.84,
-    "inferenceTimeMs": 82.31,
-    "processingTimeMs": 96.44
+    "detectedInstanceCount": 5,
+    "inferenceTimeMs": 63.42,
+    "detectedCounts": {"bolt": 2, "washer": 2, "thread": 1},
+    "detections": [],
+    "assemblyReasons": [],
+    "fasteningEvaluated": true,
+    "measuredThreadCm": 1.52,
+    "threadThresholdCm": 2.16,
+    "scaleCmPerPx": 0.01923
   }
 }
 ```
 
 Responses:
 
-- `200 OK`: latest live result returned.
-- `204 No Content`: no Vision result exists yet.
+- `200 OK`: latest runtime result returned.
+- `204 No Content`: VisionWorker has not produced its first result yet.
+- Database availability does not control this endpoint.
+
+See `docs/LATEST_INSPECTION_API.md` for the complete React integration contract.
 
 ## Inspection history
 
