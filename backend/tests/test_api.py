@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 import numpy as np
 import pytest
+from pathlib import Path
 
 from app import create_app
 from app.inspection import InspectionEventManager, InspectionService
@@ -126,6 +127,69 @@ def test_persist_and_read_inspection(app, client):
     assert image_response.content_type == "image/jpeg"
     assert client.get("/api/v1/inspections?page=-1").status_code == 400
 
+def test_delete_inspection_removes_record_and_evidence_image(app, client):
+    with app.app_context():
+        record = InspectionService(
+            InspectionRepository(),
+            app.config["DEFECT_STORAGE_DIR"],
+        ).persist_event(
+            InspectionResult(
+                overall_result=DEFECT,
+                missing_component_result=DEFECT,
+                alignment_result=NORMAL,
+                fastening_result=NORMAL,
+                processed_frame=np.zeros(
+                    (24, 32, 3),
+                    dtype=np.uint8,
+                ),
+                inspection_time=datetime.now(
+                    timezone.utc,
+                ),
+            )
+        )
+
+        record_id = record.id
+        image_path = Path(
+            record.defect_image_path,
+        )
+
+        assert image_path.is_file()
+
+    response = client.delete(
+        f"/api/v1/inspections/{record_id}"
+    )
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "deleted": True,
+        "inspectionId": record_id,
+        "imageDeleted": True,
+    }
+
+    assert not image_path.exists()
+
+    detail_response = client.get(
+        f"/api/v1/inspections/{record_id}"
+    )
+
+    assert detail_response.status_code == 404
+
+    history = client.get(
+        "/api/v1/inspections?page=0&size=20"
+    ).get_json()
+
+    assert history["totalElements"] == 0
+
+
+def test_delete_missing_inspection_returns_404(client):
+    response = client.delete(
+        "/api/v1/inspections/999999"
+    )
+
+    assert response.status_code == 404
+    assert response.get_json()["message"] == (
+        "Inspection record not found."
+    )
 
 def test_persist_event_is_idempotent_for_same_event_key(app, client):
     result = InspectionResult(
