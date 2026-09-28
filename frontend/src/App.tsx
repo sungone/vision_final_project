@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage'
 import HistoryPage from './pages/HistoryPage'
 import InspectionDetailPage from './pages/InspectionDetailPage'
 import InspectionPage from './pages/InspectionPage'
+import RealtimeInspectionPage from './pages/RealtimeInspectionPage'
 import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
@@ -19,7 +20,10 @@ export default function App() {
           <Route
             index
             element={
-              <Navigate to="/dashboard" replace />
+              <Navigate
+                to="/dashboard"
+                replace
+              />
             }
           />
 
@@ -31,6 +35,11 @@ export default function App() {
           <Route
             path="/inspection"
             element={<InspectionPage />}
+          />
+
+          <Route
+            path="/realtime"
+            element={<RealtimeInspectionPage />}
           />
 
           <Route
@@ -51,7 +60,10 @@ export default function App() {
           <Route
             path="*"
             element={
-              <Navigate to="/dashboard" replace />
+              <Navigate
+                to="/dashboard"
+                replace
+              />
             }
           />
         </Route>
