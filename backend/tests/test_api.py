@@ -3,6 +3,9 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 
+import io
+import cv2
+
 from app import create_app
 from app.inspection import InspectionEventManager, InspectionService
 from app.repositories import InspectionRepository
@@ -223,3 +226,110 @@ def test_model_load_failure_does_not_silently_fall_back_to_normal_mock(tmp_path)
                 "DEFECT_STORAGE_DIR": str(tmp_path / "defects"),
             }
         )
+
+def test_uploaded_image_is_inspected_and_persisted(
+    client,
+):
+    source = np.zeros(
+        (120, 160, 3),
+        dtype=np.uint8,
+    )
+
+    encoded_ok, encoded = cv2.imencode(
+        ".jpg",
+        source,
+    )
+
+    assert encoded_ok
+
+    response = client.post(
+        "/api/v1/inspections",
+        data={
+            "image": (
+                io.BytesIO(encoded.tobytes()),
+                "bolt.jpg",
+                "image/jpeg",
+            )
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 201
+
+    body = response.get_json()
+
+    assert body["inspectionId"] == 1
+    assert body["overallResult"] == NORMAL
+    assert body["assemblySequenceResult"] == NORMAL
+    assert body["fasteningQualityResult"] == NORMAL
+    assert body["resultImageUrl"] == (
+        "/api/v1/inspections/1/image"
+    )
+    assert body["metrics"]["processingTimeMs"] >= 0
+
+    image_response = client.get(
+        body["resultImageUrl"]
+    )
+
+    assert image_response.status_code == 200
+    assert image_response.content_type == "image/jpeg"
+
+    history = client.get(
+        "/api/v1/inspections?page=0&size=20"
+    ).get_json()
+
+    assert history["totalElements"] == 1
+
+
+def test_upload_requires_an_image(client):
+    response = client.post(
+        "/api/v1/inspections",
+        data={},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["code"] == (
+        "missing_image"
+    )
+
+
+def test_upload_rejects_unsupported_file_type(
+    client,
+):
+    response = client.post(
+        "/api/v1/inspections",
+        data={
+            "image": (
+                io.BytesIO(b"not an image"),
+                "bolt.txt",
+                "text/plain",
+            )
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 415
+    assert response.get_json()["code"] == (
+        "unsupported_image_type"
+    )
+
+
+def test_upload_rejects_invalid_image_bytes(
+    client,
+):
+    response = client.post(
+        "/api/v1/inspections",
+        data={
+            "image": (
+                io.BytesIO(b"invalid jpeg"),
+                "bolt.jpg",
+                "image/jpeg",
+            )
+        },
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["code"] == (
+        "invalid_image"
+    )

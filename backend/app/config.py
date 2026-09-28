@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import math
 from pathlib import Path
 
 
@@ -27,12 +28,26 @@ def _float(name: str, default: float) -> float:
 
 def _optional_float(name: str) -> float | None:
     value = os.getenv(name)
-    if value is None or not value.strip():
+    if value is None or value.strip().lower() in {"", "none", "null"}:
         return None
     try:
-        return float(value)
-    except ValueError:
-        return None
+        parsed = float(value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a finite number or null") from exc
+    if not math.isfinite(parsed):
+        raise ValueError(f"{name} must be a finite number or null")
+    return parsed
+
+
+def _strict_float(name: str, default: float) -> float:
+    value = os.getenv(name, str(default))
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a finite number") from exc
+    if not math.isfinite(parsed):
+        raise ValueError(f"{name} must be a finite number")
+    return parsed
 
 
 def _path(name: str, default: Path, relative_to: Path) -> str:
@@ -57,6 +72,21 @@ class Config:
     FLASK_HOST = os.getenv("FLASK_HOST", "0.0.0.0")
     FLASK_PORT = _int("FLASK_PORT", 5000)
     CORS_ALLOWED_ORIGINS = _list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
+
+    MAX_UPLOAD_IMAGE_BYTES = max(
+        1,
+        _int(
+            "MAX_UPLOAD_IMAGE_BYTES",
+            10 * 1024 * 1024,
+        ),
+    )
+    MAX_CONTENT_LENGTH = max(
+        MAX_UPLOAD_IMAGE_BYTES + 1024 * 1024,
+        _int(
+            "MAX_UPLOAD_REQUEST_BYTES",
+            11 * 1024 * 1024,
+        ),
+    )
 
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "postgresql+psycopg://vision:vision@localhost:5432/vision_inspection"
@@ -98,7 +128,7 @@ class Config:
         BASE_DIR,
     )
     THREAD_EXPOSURE_MIN_RATIO = max(
-        0.001, _float("THREAD_EXPOSURE_MIN_RATIO", 1.36)
+        0.001, _strict_float("THREAD_EXPOSURE_MIN_RATIO", 1.36)
     )
     THREAD_EXPOSURE_MIN_RATIO_FROM_ENV = (
         os.getenv("THREAD_EXPOSURE_MIN_RATIO") is not None
