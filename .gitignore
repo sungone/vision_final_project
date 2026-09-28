@@ -23,9 +23,8 @@ cloudflare/*.json
 .cloudflared/
 
 # Runtime output
-backend/storage/defects/*
-!backend/storage/defects/.gitkeep
-storage/inspections/
+images/
+storage/
 .tools/
 *.log
 
