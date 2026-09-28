@@ -157,7 +157,7 @@ export default function DashboardPage() {
 
   const filteredHistory = useMemo(() => {
     const referenceTime =
-      historyUpdatedAt?.getTime() ?? Date.now()
+      historyUpdatedAt?.getTime() ?? 0
 
     const cutoff =
       referenceTime -
