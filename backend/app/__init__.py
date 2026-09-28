@@ -49,7 +49,7 @@ def _register_cors_headers(app: Flask) -> None:
         if origin and origin.rstrip("/") in app.config["CORS_ALLOWED_ORIGINS"]:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Vary"] = "Origin"
-            response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+            response.headers["Access-Control-Allow-Methods"] = "GET, DELETE, OPTIONS"
             response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         return response
 
