@@ -68,6 +68,8 @@ class Runtime:
             self.persistence.submit,
             app.config["VISION_FPS"],
             app.config["JPEG_QUALITY"],
+            app.config["VISION_LIVE_LOG"],
+            app.config["VISION_LIVE_LOG_INTERVAL"],
         )
 
     def _build_processor(self):
@@ -184,9 +186,9 @@ class Runtime:
     def _build_decision_engine(self) -> InspectionDecisionEngine:
         return InspectionDecisionEngine(
             expected_washer_count=self.app.config["EXPECTED_WASHER_COUNT"],
-            reference_head_cm=self.app.config["REFERENCE_HEAD_CM"],
-            full_thread_cm=self.app.config["FULL_THREAD_CM"],
-            tightness_min_ratio=self.app.config["TIGHTNESS_MIN_RATIO"],
+            thread_exposure_min_ratio=self.app.config["THREAD_EXPOSURE_MIN_RATIO"],
+            gap_ratio_max=self.app.config["GAP_RATIO_MAX"],
+            bolt_diameter_mm=self.app.config["BOLT_DIAMETER_MM"],
         )
 
     def start(self) -> None:

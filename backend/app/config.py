@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import math
 from pathlib import Path
 
 
@@ -23,6 +24,30 @@ def _float(name: str, default: float) -> float:
         return float(os.getenv(name, str(default)))
     except ValueError:
         return default
+
+
+def _optional_float(name: str) -> float | None:
+    value = os.getenv(name)
+    if value is None or value.strip().lower() in {"", "none", "null"}:
+        return None
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a finite number or null") from exc
+    if not math.isfinite(parsed):
+        raise ValueError(f"{name} must be a finite number or null")
+    return parsed
+
+
+def _strict_float(name: str, default: float) -> float:
+    value = os.getenv(name, str(default))
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a finite number") from exc
+    if not math.isfinite(parsed):
+        raise ValueError(f"{name} must be a finite number")
+    return parsed
 
 
 def _path(name: str, default: Path, relative_to: Path) -> str:
@@ -62,6 +87,8 @@ class Config:
     CAMERA_RECONNECT_SECONDS = _float("CAMERA_RECONNECT_SECONDS", 2.0)
 
     VISION_FPS = _float("VISION_FPS", 10.0)
+    VISION_LIVE_LOG = _bool("VISION_LIVE_LOG", False)
+    VISION_LIVE_LOG_INTERVAL = max(0.0, _float("VISION_LIVE_LOG_INTERVAL", 1.0))
     STREAM_FPS = _float("STREAM_FPS", 10.0)
     JPEG_QUALITY = min(100, max(1, _int("JPEG_QUALITY", 80)))
     VISION_PROCESSOR = os.getenv("VISION_PROCESSOR", "unet").strip().lower()
@@ -78,9 +105,9 @@ class Config:
     DRAW_BOUNDING_BOXES = _bool("DRAW_BOUNDING_BOXES", True)
     DRAW_INFERENCE_STATS = _bool("DRAW_INFERENCE_STATS", True)
     EXPECTED_WASHER_COUNT = max(0, _int("EXPECTED_WASHER_COUNT", 2))
-    REFERENCE_HEAD_CM = max(0.001, _float("REFERENCE_HEAD_CM", 1.0))
-    FULL_THREAD_CM = max(0.001, _float("FULL_THREAD_CM", 2.0))
-    TIGHTNESS_MIN_RATIO = max(0.001, _float("TIGHTNESS_MIN_RATIO", 0.9))
+    THREAD_EXPOSURE_MIN_RATIO = _strict_float("THREAD_EXPOSURE_MIN_RATIO", 1.36)
+    GAP_RATIO_MAX = _optional_float("GAP_RATIO_MAX")
+    BOLT_DIAMETER_MM = _optional_float("BOLT_DIAMETER_MM")
     UNET_FINE_MODEL_PATH = _path(
         "UNET_FINE_MODEL_PATH", PROJECT_DIR / "output" / "u-net" / "fine" / "best.pt", BASE_DIR
     )

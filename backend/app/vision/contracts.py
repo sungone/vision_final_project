@@ -49,7 +49,7 @@ class InspectionResult:
 
     @property
     def assembly_sequence_result(self) -> str:
-        return self.missing_component_result
+        return self.alignment_result
 
     @property
     def fastening_quality_result(self) -> str:

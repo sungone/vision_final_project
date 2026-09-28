@@ -68,30 +68,35 @@ Returns a minimal HTML page containing an `<img>` linked to `/api/v1/stream`. It
 
 ### `GET /api/v1/inspection/latest`
 
-Returns the most recently persisted inspection event.
+Returns the most recent in-memory `InspectionResult` produced by the Vision worker. This
+endpoint is independent of EventManager deduplication and database persistence. It returns
+`204 No Content` until the worker completes its first frame.
 
 ```json
 {
-  "id": 125,
   "inspectionTime": "2026-09-22T20:10:32+09:00",
   "overallResult": "DEFECT",
-  "missingComponentResult": "NORMAL",
-  "alignmentResult": "NORMAL",
-  "fasteningResult": "DEFECT",
+  "assemblySequenceResult": "DEFECT",
+  "fasteningQualityResult": "NOT_EVALUATED",
+  "missingComponentResult": "DEFECT",
+  "alignmentResult": "NOT_EVALUATED",
+  "fasteningResult": "NOT_EVALUATED",
   "metrics": {
-    "washerGapPx": 12.4,
-    "threadExposurePx": 35.2
-  },
-  "defectImageUrl": "/api/v1/inspections/125/image",
-  "createdAt": "2026-09-22T20:10:32.120+09:00"
+    "modelType": "u-net-resnet18",
+    "detectedInstanceCount": 4,
+    "threadExposureRatio": 1.42,
+    "threadExposureThreshold": 1.36,
+    "visionFps": 9.84,
+    "inferenceTimeMs": 82.31,
+    "processingTimeMs": 96.44
+  }
 }
 ```
 
 Responses:
 
-- `200 OK`: latest event returned.
-- `204 No Content`: no inspection event exists yet.
-- `503 Service Unavailable`: database is unavailable.
+- `200 OK`: latest live result returned.
+- `204 No Content`: no Vision result exists yet.
 
 ## Inspection history
 

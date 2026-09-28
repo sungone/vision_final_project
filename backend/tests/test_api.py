@@ -16,6 +16,29 @@ def test_empty_latest_and_history(client):
     assert response.get_json()["content"] == []
 
 
+def test_latest_inspection_returns_the_runtime_buffer_result(app, client):
+    inspection_time = datetime(2026, 9, 28, 1, 22, 34, 512000, tzinfo=timezone.utc)
+    result = InspectionResult(
+        overall_result=DEFECT,
+        missing_component_result=NORMAL,
+        alignment_result="NOT_EVALUATED",
+        fastening_result=DEFECT,
+        metrics={
+            "threadExposureRatio": 1.42,
+            "threadExposureThreshold": 1.36,
+            "visionFps": 9.84,
+            "processingTimeMs": 96.44,
+        },
+        inspection_time=inspection_time,
+    )
+    app.extensions["vision_runtime"].latest_results.put(result, inspection_time)
+
+    response = client.get("/api/v1/inspection/latest")
+
+    assert response.status_code == 200
+    assert response.get_json() == result.to_live_dict()
+
+
 def test_persist_and_read_inspection(app, client):
     with app.app_context():
         InspectionService(InspectionRepository(), app.config["DEFECT_STORAGE_DIR"]).persist_event(
@@ -43,15 +66,16 @@ def test_persist_and_read_inspection(app, client):
                 inspection_time=datetime.now(timezone.utc),
             )
         )
-    latest = client.get("/api/v1/inspection/latest")
-    assert latest.status_code == 200
-    assert latest.get_json()["fasteningResult"] == DEFECT
-    assert latest.get_json()["assemblySequenceResult"] == NORMAL
-    assert latest.get_json()["fasteningQualityResult"] == DEFECT
-    assert latest.get_json()["detectedInstanceCount"] == 3
-    assert latest.get_json()["inferenceTimeMs"] == 82.4
-    assert latest.get_json()["modelName"] == "u-net-resnet18"
-    image_response = client.get(latest.get_json()["defectImageUrl"])
+    history = client.get("/api/v1/inspections?page=0&size=20")
+    assert history.status_code == 200
+    latest = history.get_json()["content"][0]
+    assert latest["fasteningResult"] == DEFECT
+    assert latest["assemblySequenceResult"] == NORMAL
+    assert latest["fasteningQualityResult"] == DEFECT
+    assert latest["detectedInstanceCount"] == 3
+    assert latest["inferenceTimeMs"] == 82.4
+    assert latest["modelName"] == "u-net-resnet18"
+    image_response = client.get(latest["defectImageUrl"])
     assert image_response.status_code == 200
     assert image_response.content_type == "image/jpeg"
     assert client.get("/api/v1/inspections?page=-1").status_code == 400

@@ -17,10 +17,11 @@ def _repository() -> InspectionRepository:
 
 @bp.get("/api/v1/inspection/latest")
 def latest_inspection():
-    record = _repository().latest()
-    if record is None:
+    runtime = current_app.extensions["vision_runtime"]
+    snapshot = runtime.latest_results.get(timeout=0)
+    if snapshot is None:
         return "", 204
-    return jsonify(record.to_dict())
+    return jsonify(snapshot.value.to_live_dict())
 
 
 @bp.get("/api/v1/inspections")

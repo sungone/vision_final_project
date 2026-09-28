@@ -65,11 +65,11 @@ class InspectionVisualizer:
             color,
             2,
         )
-        measured = inspection.metrics.get("measuredThreadCm")
-        threshold = inspection.metrics.get("threadThresholdCm")
-        reasons = inspection.metrics.get("assemblyReasons") or []
+        measured = inspection.metrics.get("threadExposureRatio")
+        threshold = inspection.metrics.get("threadExposureThreshold")
+        reasons = inspection.metrics.get("reasons") or []
         detail = (
-            f"THREAD: {measured:.2f} cm | MIN: {threshold:.2f} cm"
+            f"THREAD/D: {measured:.2f} | MIN: {threshold:.2f}"
             if isinstance(measured, (int, float)) and isinstance(threshold, (int, float))
             else f"REASON: {','.join(str(item) for item in reasons) or 'not evaluated'}"
         )
