@@ -9,7 +9,7 @@ from flask import Flask
 from app.camera import CameraCaptureWorker, LatestFrameBuffer, LatestValueBuffer
 from app.inspection import InspectionEventManager, InspectionPersistenceWorker, InspectionService
 from app.repositories import InspectionRepository
-from app.vision.contracts import InspectionResult
+from app.vision.contracts import InspectionResult, VisionProcessor
 from app.vision.decision_engine import InspectionDecisionEngine
 from app.vision.mask_rcnn import (
     MaskRCNNPredictor,
@@ -22,6 +22,15 @@ from app.vision.worker import VisionWorker
 
 
 logger = logging.getLogger(__name__)
+
+class SynchronizedVisionProcessor:
+    def __init__(self, processor: VisionProcessor) -> None:
+        self._processor = processor
+        self._lock = threading.Lock()
+
+    def process(self, frame):
+        with self._lock:
+            return self._processor.process(frame)
 
 
 class Runtime:
@@ -57,13 +66,15 @@ class Runtime:
             app.config["CAMERA_FPS"],
             app.config["CAMERA_RECONNECT_SECONDS"],
         )
-        processor = self._build_processor()
+        self.processor = SynchronizedVisionProcessor(
+            self._build_processor()
+        )
         self.vision = VisionWorker(
             self.raw_frames,
             self.processed_frames,
             self.encoded_frames,
             self.latest_results,
-            processor,
+            self.processor,
             self.event_manager,
             self.persistence.submit,
             app.config["VISION_FPS"],

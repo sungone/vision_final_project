@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from app.vision.contracts import DEFECT, NORMAL
+from app.vision.contracts import NORMAL
 from app.vision.decision_engine import InspectionDecisionEngine
 from app.vision.unet import ResNet18UNet, UNetSegmentationPostProcessor
 
@@ -40,6 +40,9 @@ def test_unet_postprocessor_splits_semantic_classes_into_instances():
         "thread",
     ]
     assert result.assembly_sequence_result == NORMAL
-    assert result.fastening_quality_result == DEFECT
-    assert result.metrics["threadThresholdCm"] == 2.16
+    assert result.fastening_quality_result == NORMAL
+    assert (
+        result.metrics["threadExposureThreshold"]
+        == 1.36
+    )
     assert result.metrics["detectedInstanceCount"] == 5

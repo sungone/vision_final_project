@@ -232,14 +232,31 @@ class InspectionDecisionEngine:
         gap_ratio = gap_px / diameter_px if gap_px is not None else None
         nut_tilt_deg = self._nut_tilt(roles.nut.pixels_xy, perpendicular)
         reasons: list[str] = []
-        if thread_ratio < self.thread_exposure_min_ratio:
+        if (
+            thread_ratio
+            < self.thread_exposure_min_ratio
+            and not math.isclose(
+                thread_ratio,
+                self.thread_exposure_min_ratio,
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            )
+        ):
             reasons.append("LOOSE")
+
         if (
             self.gap_ratio_max is not None
             and gap_ratio is not None
             and gap_ratio > self.gap_ratio_max
+            and not math.isclose(
+                gap_ratio,
+                self.gap_ratio_max,
+                rel_tol=1e-9,
+                abs_tol=1e-9,
+            )
         ):
             reasons.append("GAP")
+
         return FasteningDecision(
             NORMAL if not reasons else DEFECT,
             reasons,
@@ -252,24 +269,57 @@ class InspectionDecisionEngine:
         )
 
     def _add_fastening_metrics(
-        self, metrics: dict[str, object], fastening: FasteningDecision
+        self,
+        metrics: dict[str, object],
+        fastening: FasteningDecision,
     ) -> None:
+        displayed_thread_ratio = self._rounded(
+            fastening.thread_ratio,
+            3,
+        )
+        displayed_gap_ratio = self._rounded(
+            fastening.gap_ratio,
+            3,
+        )
+
         values = {
-            "threadExposureRatio": self._rounded(fastening.thread_ratio, 3),
-            "threadExposurePx": self._rounded(fastening.exposed_thread_px, 2),
-            "nutWasherGapRatio": self._rounded(fastening.gap_ratio, 3),
-            "nutWasherGapPx": self._rounded(fastening.gap_px, 2),
-            "nutTiltDeg": self._rounded(fastening.nut_tilt_deg, 2),
+            "threadExposureRatio": displayed_thread_ratio,
+            "threadExposurePx": self._rounded(
+                fastening.exposed_thread_px,
+                2,
+            ),
+            "nutWasherGapRatio": displayed_gap_ratio,
+            "nutWasherGapPx": self._rounded(
+                fastening.gap_px,
+                2,
+            ),
+            "nutTiltDeg": self._rounded(
+                fastening.nut_tilt_deg,
+                2,
+            ),
         }
-        metrics.update({key: value for key, value in values.items() if value is not None})
+
+        metrics.update(
+            {
+                key: value
+                for key, value in values.items()
+                if value is not None
+            }
+        )
+
         if self.bolt_diameter_mm is not None:
-            if fastening.thread_ratio is not None:
+            if displayed_thread_ratio is not None:
                 metrics["threadExposureMm"] = round(
-                    fastening.thread_ratio * self.bolt_diameter_mm, 3
+                    displayed_thread_ratio
+                    * self.bolt_diameter_mm,
+                    3,
                 )
-            if fastening.gap_ratio is not None:
+
+            if displayed_gap_ratio is not None:
                 metrics["nutWasherGapMm"] = round(
-                    fastening.gap_ratio * self.bolt_diameter_mm, 3
+                    displayed_gap_ratio
+                    * self.bolt_diameter_mm,
+                    3,
                 )
 
     def _base_metrics(self, vision: FrameVisionResult, model_type: str) -> dict[str, object]:

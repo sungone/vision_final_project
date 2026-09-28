@@ -22,6 +22,7 @@ import {
   resolveResultImageUrl,
 } from '../services/inspectionApi'
 import type {
+  FinalInspectionResult,
   InspectionResponse,
   InspectionResult,
 } from '../types/inspection'
@@ -60,7 +61,7 @@ export default function InspectionPage() {
     }
   }, [])
 
-  const finalResult = useMemo<InspectionResult | null>(() => {
+  const finalResult = useMemo<FinalInspectionResult | null>(() => {
     return getFinalResult(selectedItem?.response)
   }, [selectedItem])
 
@@ -593,7 +594,7 @@ function ResultPanel({
   onInspect,
 }: {
   item?: InspectionItem
-  finalResult: InspectionResult | null
+  finalResult: FinalInspectionResult | null
   onInspect: () => void
 }) {
   return (
@@ -702,20 +703,28 @@ function ResultRow({
   label: string
   result: InspectionResult
 }) {
-  const normal = result === 'NORMAL'
+  const presentation =
+    result === 'NORMAL'
+      ? {
+          label: '정상',
+          className: 'text-[#168b5b]',
+        }
+      : result === 'DEFECT'
+        ? {
+            label: '불량',
+            className: 'text-[#d94b4b]',
+          }
+        : {
+            label: '미평가',
+            className: 'text-[#697d90]',
+          }
 
   return (
     <div className="mt-3 flex items-center justify-between border-b border-[#e1e9f0] py-3">
       <span>{label}</span>
 
-      <strong
-        className={
-          normal
-            ? 'text-[#168b5b]'
-            : 'text-[#d94b4b]'
-        }
-      >
-        {normal ? '정상' : '불량'}
+      <strong className={presentation.className}>
+        {presentation.label}
       </strong>
     </div>
   )
@@ -723,15 +732,8 @@ function ResultRow({
 
 function getFinalResult(
   response?: InspectionResponse,
-): InspectionResult | null {
-  if (!response) {
-    return null
-  }
-
-  return response.assemblySequenceResult === 'NORMAL' &&
-    response.fasteningQualityResult === 'NORMAL'
-    ? 'NORMAL'
-    : 'DEFECT'
+): FinalInspectionResult | null {
+  return response?.overallResult ?? null
 }
 
 function getItemStatus(item: InspectionItem) {

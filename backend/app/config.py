@@ -73,6 +73,21 @@ class Config:
     FLASK_PORT = _int("FLASK_PORT", 5000)
     CORS_ALLOWED_ORIGINS = _list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
+    MAX_UPLOAD_IMAGE_BYTES = max(
+        1,
+        _int(
+            "MAX_UPLOAD_IMAGE_BYTES",
+            10 * 1024 * 1024,
+        ),
+    )
+    MAX_CONTENT_LENGTH = max(
+        MAX_UPLOAD_IMAGE_BYTES + 1024 * 1024,
+        _int(
+            "MAX_UPLOAD_REQUEST_BYTES",
+            11 * 1024 * 1024,
+        ),
+    )
+
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "postgresql+psycopg://vision:vision@localhost:5432/vision_inspection"
     )
