@@ -36,6 +36,32 @@ export interface LatestInspectionResponse {
   metrics: InspectionMetrics
 }
 
+export interface InspectionHistoryItem {
+  id: number
+  inspectionTime: string
+  overallResult: ResultStatus
+  assemblySequenceResult: ResultStatus
+  fasteningQualityResult: ResultStatus
+  missingComponentResult: ResultStatus
+  alignmentResult: ResultStatus
+  fasteningResult: ResultStatus
+  detectedInstanceCount: number | null
+  inferenceTimeMs: number | null
+  modelName: string | null
+  metrics: Partial<InspectionMetrics> &
+    Record<string, unknown>
+  defectImageUrl: string | null
+  createdAt: string
+}
+
+export interface InspectionHistoryPage {
+  content: InspectionHistoryItem[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export interface SystemStatus {
   cameraConnected: boolean
   visionWorkerRunning: boolean
