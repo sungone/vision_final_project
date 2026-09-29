@@ -93,100 +93,44 @@ def _sample(manager, clock: FakeClock, result: InspectionResult):
     return event
 
 
-def test_same_defect_is_emitted_once():
+def test_every_sampled_defect_is_emitted():
     clock = FakeClock()
     manager = _manager(clock)
     defect = _defect()
 
     events = [_sample(manager, clock, defect) for _ in range(4)]
 
-    assert sum(event is not None for event in events) == 1
+    assert events == [defect, defect, defect, defect]
     assert manager.state == InspectionState.CONFIRMED_DEFECT
 
 
-def test_different_defect_is_emitted_without_normal_between():
+def test_every_sampled_normal_is_emitted_without_stability_gate():
+    clock = FakeClock()
+    manager = _manager(clock, reset_frames=2)
+    normal = _normal()
+
+    events = [_sample(manager, clock, normal) for _ in range(4)]
+
+    assert events == [normal, normal, normal, normal]
+    assert manager.state == InspectionState.NORMAL
+
+
+def test_result_changes_are_not_required_for_emission():
     clock = FakeClock()
     manager = _manager(clock)
     defect_a = _defect()
     defect_b = _defect(bolt_count=0, reasons=("no_bolt",))
+    normal = _normal()
 
     events = [
         _sample(manager, clock, defect_a),
         _sample(manager, clock, defect_a),
-        _sample(manager, clock, defect_b),
+        _sample(manager, clock, normal),
         _sample(manager, clock, defect_b),
     ]
 
-    assert [event for event in events if event is not None] == [defect_a, defect_b]
-
-
-def test_small_segmentation_jitter_is_same_defect():
-    clock = FakeClock()
-    manager = _manager(clock, tolerance=0.05)
-
-    events = [
-        _sample(manager, clock, _defect(thread_length=180.0)),
-        _sample(manager, clock, _defect(thread_length=182.0)),
-        _sample(manager, clock, _defect(thread_length=179.0)),
-    ]
-
-    assert sum(event is not None for event in events) == 1
-
-
-def test_detection_array_order_does_not_change_signature():
-    clock = FakeClock()
-    manager = _manager(clock)
-    first = _defect()
-    reordered = _defect()
-    reordered.metrics["detections"] = list(reversed(reordered.metrics["detections"]))
-
-    assert _sample(manager, clock, first) is not None
-    assert _sample(manager, clock, reordered) is None
-
-
-def test_large_relative_position_change_is_new_defect():
-    clock = FakeClock()
-    manager = _manager(clock, tolerance=0.05)
-
-    first = _sample(manager, clock, _defect(washer_y=150.0))
-    second = _sample(manager, clock, _defect(washer_y=280.0))
-
-    assert first is not None
-    assert second is not None
-
-
-def test_categorical_defect_change_is_new_event():
-    clock = FakeClock()
-    manager = _manager(clock)
-
-    missing_washer = _sample(
-        manager,
-        clock,
-        _defect(washer_count=0, reasons=("washer_low(0)",)),
-    )
-    no_bolt = _sample(
-        manager,
-        clock,
-        _defect(bolt_count=0, reasons=("no_bolt", "washer_low(0)"), washer_count=0),
-    )
-
-    assert missing_washer is not None
-    assert no_bolt is not None
-
-
-def test_normal_reset_allows_same_defect_in_new_cycle():
-    clock = FakeClock()
-    manager = _manager(clock, reset_frames=2)
-    defect = _defect()
-
-    first = _sample(manager, clock, defect)
-    assert _sample(manager, clock, _normal()) is None
-    assert _sample(manager, clock, _normal()) is None
-    assert manager.state == InspectionState.NORMAL
-    second = _sample(manager, clock, defect)
-
-    assert first is not None
-    assert second is not None
+    assert events == [defect_a, defect_a, normal, defect_b]
+    assert manager.state == InspectionState.CONFIRMED_DEFECT
 
 
 def test_event_evaluation_does_not_exceed_sample_fps():
@@ -202,10 +146,10 @@ def test_event_evaluation_does_not_exceed_sample_fps():
     clock.value = 1.0
     events.append(manager.consume(defect_b))
 
-    assert sum(event is not None for event in events) == 2
+    assert [event for event in events if event is not None] == [defect_a, defect_b]
 
 
-def test_failed_event_delivery_rearms_signature_for_retry():
+def test_failed_event_delivery_keeps_fixed_sampling_schedule():
     clock = FakeClock()
     manager = _manager(clock)
     defect = _defect()

@@ -24,6 +24,7 @@ def system_status():
             "visionWorkerRunning": runtime.vision.running,
             "persistenceWorkerRunning": runtime.persistence.running,
             "pendingPersistenceEvents": runtime.persistence.pending_count,
+            "persistedInspectionCount": runtime.persistence.persisted_count,
             "modelLoaded": runtime.model_loaded,
             "modelType": runtime.model_type,
             "visionDevice": runtime.vision_device,

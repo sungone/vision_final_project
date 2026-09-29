@@ -636,25 +636,27 @@ function ResultPanel({
                   : 'text-[#d94b4b]',
               ].join(' ')}
             >
-              {finalResult === 'NORMAL' ? 'OK' : 'NG'}
+              {finalResult === 'NORMAL' ? 'OK' : '불량'}
             </p>
           </div>
 
           <h3 className="mt-7 font-bold">검사 항목</h3>
 
           <ResultRow
+            label="구성품 개수"
+            result={item.response.missingComponentResult}
+          />
+
+          <ResultRow
             label="조립 순서"
-            result={
-              item.response.assemblySequenceResult
-            }
+            result={item.response.assemblySequenceResult}
           />
 
           <ResultRow
             label="체결 상태"
-            result={
-              item.response.fasteningQualityResult
-            }
+            result={item.response.fasteningResult}
           />
+
         </div>
       ) : (
         <div className="mt-5 rounded-lg border border-[#dce6ef] bg-[#f3f7fb] p-5">
@@ -709,15 +711,10 @@ function ResultRow({
           label: '정상',
           className: 'text-[#168b5b]',
         }
-      : result === 'DEFECT'
-        ? {
-            label: '불량',
-            className: 'text-[#d94b4b]',
-          }
-        : {
-            label: '미평가',
-            className: 'text-[#697d90]',
-          }
+      : {
+          label: '불량',
+          className: 'text-[#d94b4b]',
+        }
 
   return (
     <div className="mt-3 flex items-center justify-between border-b border-[#e1e9f0] py-3">
@@ -749,7 +746,7 @@ function getItemStatus(item: InspectionItem) {
 
   if (result === 'DEFECT') {
     return {
-      label: 'NG',
+      label: '불량',
       className: 'bg-red-100 text-red-700',
     }
   }
