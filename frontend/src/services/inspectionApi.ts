@@ -30,6 +30,7 @@ export async function getLatestInspection(
     `${API_BASE_URL}/api/v1/inspection/latest`,
     {
       method: 'GET',
+      cache: 'no-store',
       signal,
     },
   )
@@ -147,6 +148,7 @@ export async function getSystemStatus(
     `${API_BASE_URL}/api/v1/system/status`,
     {
       method: 'GET',
+      cache: 'no-store',
       signal,
     },
   )
