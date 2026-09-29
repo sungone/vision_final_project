@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime, timezone
 
 import numpy as np
@@ -149,7 +150,32 @@ def test_persist_event_is_idempotent_for_same_event_key(app, client):
     assert history["totalElements"] == 1
 
 
-def test_signature_filter_persists_only_distinct_defects(app, client):
+def test_persist_normal_event_with_result_image(app, client):
+    result = InspectionResult(
+        overall_result=NORMAL,
+        missing_component_result=NORMAL,
+        alignment_result=NORMAL,
+        fastening_result=NORMAL,
+        processed_frame=np.zeros((24, 32, 3), dtype=np.uint8),
+    )
+
+    with app.app_context():
+        record = InspectionService(
+            InspectionRepository(),
+            app.config["DEFECT_STORAGE_DIR"],
+        ).persist_event(result)
+        record_id = record.id
+        assert record.defect_image_path is not None
+        assert record.defect_image_path.endswith(".jpg")
+        assert "normal_" in record.defect_image_path
+
+    item = client.get(f"/api/v1/inspections/{record_id}").get_json()
+    assert item["overallResult"] == NORMAL
+    assert item["defectImageUrl"] is not None
+    assert client.get(item["defectImageUrl"]).status_code == 200
+
+
+def test_event_filter_persists_every_sampled_result(app, client):
     ticks = iter((0.0, 1.0, 2.0, 3.0))
     manager = InspectionEventManager(
         reset_frames=2,
@@ -182,13 +208,18 @@ def test_signature_filter_persists_only_distinct_defects(app, client):
 
     with app.app_context():
         service = InspectionService(InspectionRepository(), app.config["DEFECT_STORAGE_DIR"])
-        for result in (defect_a, defect_a, defect_b, defect_b):
+        for result in (
+            deepcopy(defect_a),
+            deepcopy(defect_a),
+            deepcopy(defect_b),
+            deepcopy(defect_b),
+        ):
             event = manager.consume(result)
             if event is not None:
                 service.persist_event(event)
 
     history = client.get("/api/v1/inspections?page=0&size=20").get_json()
-    assert history["totalElements"] == 2
+    assert history["totalElements"] == 4
 
 
 def test_status_endpoint(client):

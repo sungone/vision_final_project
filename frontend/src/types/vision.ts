@@ -67,6 +67,7 @@ export interface SystemStatus {
   visionWorkerRunning: boolean
   persistenceWorkerRunning: boolean
   pendingPersistenceEvents: number
+  persistedInspectionCount: number
   modelLoaded: boolean
   modelType: string | null
   visionDevice: string | null

@@ -7,8 +7,6 @@ from enum import Enum
 
 from app.vision.contracts import InspectionResult
 
-from .defect_signature import DefectSignature
-
 
 class InspectionState(str, Enum):
     NORMAL = "NORMAL"
@@ -16,7 +14,7 @@ class InspectionState(str, Enum):
 
 
 class InspectionEventManager:
-    """Sample frame results and emit only meaningfully changed defect states."""
+    """Emit the latest inspection result at a fixed sampling interval."""
 
     def __init__(
         self,
@@ -33,11 +31,7 @@ class InspectionEventManager:
         self._clock = clock
         self._lock = threading.Lock()
         self._state = InspectionState.NORMAL
-        self._normal_count = 0
         self._next_sample_at = float("-inf")
-        self._last_signature: DefectSignature | None = None
-        self._signature_before_emit: DefectSignature | None = None
-        self._emission_can_rollback = False
 
     def consume(self, result: InspectionResult) -> InspectionResult | None:
         with self._lock:
@@ -45,52 +39,15 @@ class InspectionEventManager:
             if now < self._next_sample_at:
                 return None
             self._next_sample_at = now + self._sample_interval
-
-            if not result.is_defect:
-                self._consume_normal()
-                return None
-
-            self._normal_count = 0
-            signature = DefectSignature.from_result(result)
-            if self._last_signature is not None and signature.is_similar_to(
-                self._last_signature,
-                self.geometry_tolerance_ratio,
-            ):
-                self._state = InspectionState.CONFIRMED_DEFECT
-                return None
-
-            self._signature_before_emit = self._last_signature
-            self._last_signature = signature
-            self._emission_can_rollback = True
-            self._state = InspectionState.CONFIRMED_DEFECT
-            return result
-
-    def _consume_normal(self) -> None:
-        if self._last_signature is None:
-            self._state = InspectionState.NORMAL
-            self._normal_count = 0
-            return
-        self._normal_count += 1
-        if self._normal_count >= self.reset_frames:
-            self._last_signature = None
-            self._signature_before_emit = None
-            self._emission_can_rollback = False
-            self._normal_count = 0
-            self._state = InspectionState.NORMAL
-
-    def mark_event_delivery_failed(self) -> None:
-        """Roll back signature state when the event could not enter persistence."""
-        with self._lock:
-            if not self._emission_can_rollback:
-                return
-            self._last_signature = self._signature_before_emit
-            self._signature_before_emit = None
-            self._emission_can_rollback = False
             self._state = (
                 InspectionState.CONFIRMED_DEFECT
-                if self._last_signature is not None
+                if result.is_defect
                 else InspectionState.NORMAL
             )
+            return result
+
+    def mark_event_delivery_failed(self) -> None:
+        """Keep the fixed sampling schedule after a queue delivery failure."""
 
     @property
     def state(self) -> InspectionState:

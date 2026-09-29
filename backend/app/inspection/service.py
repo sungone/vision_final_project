@@ -22,7 +22,7 @@ class InspectionService:
         existing = self.repository.get_by_event_key(event_key)
         if existing is not None:
             return existing
-        image_path = self._save_defect_frame(result)
+        image_path = self._save_result_frame(result)
         record = Inspection(
             inspection_time=result.inspection_time,
             overall_result=result.overall_result,
@@ -42,11 +42,12 @@ class InspectionService:
                 Path(image_path).unlink(missing_ok=True)
             raise
 
-    def _save_defect_frame(self, result: InspectionResult) -> str | None:
+    def _save_result_frame(self, result: InspectionResult) -> str | None:
         if result.processed_frame is None:
             return None
         self.storage_dir.mkdir(parents=True, exist_ok=True)
-        filename = f"defect_{result.inspection_time.strftime('%Y%m%dT%H%M%S_%f')}_{uuid4().hex[:8]}.jpg"
+        result_prefix = "defect" if result.is_defect else "normal"
+        filename = f"{result_prefix}_{result.inspection_time.strftime('%Y%m%dT%H%M%S_%f')}_{uuid4().hex[:8]}.jpg"
         path = (self.storage_dir / filename).resolve()
         if self.storage_dir not in path.parents:
             raise ValueError("invalid defect image path")

@@ -31,7 +31,6 @@ export default function RealtimeInspectionPage() {
     useState<LatestInspectionResponse | null>(null)
   const [systemStatus, setSystemStatus] =
     useState<SystemStatus | null>(null)
-
   const [inspectionError, setInspectionError] =
     useState('')
   const [statusError, setStatusError] =
@@ -140,6 +139,11 @@ export default function RealtimeInspectionPage() {
       systemStatus?.visionWorkerRunning,
   )
 
+  const persistenceReady = Boolean(
+    systemStatus?.databaseConnected &&
+      systemStatus?.persistenceWorkerRunning,
+  )
+
   const counts = useMemo(() => {
     const detectedCounts =
       latestInspection?.metrics.detectedCounts ?? {}
@@ -154,93 +158,137 @@ export default function RealtimeInspectionPage() {
     }
   }, [latestInspection])
 
+  const assemblyReasons =
+    latestInspection?.metrics.assemblyReasons ?? []
+
   function reconnectStream() {
     setStreamError(false)
     setStreamKey(Date.now())
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] flex-col bg-[#edf3f7] p-4 sm:p-5">
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="flex min-h-screen flex-col bg-[#f3f6fa] p-4 sm:p-5 lg:p-6">
+      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
             <Video
-              size={28}
-              className="text-[#0075c9]"
+              size={29}
+              className="text-[#003478]"
             />
 
-            <h1 className="text-2xl font-bold text-[#172a3a] sm:text-3xl">
+            <h1 className="text-2xl font-black text-[#172033] sm:text-3xl">
               실시간 영상 검사
             </h1>
           </div>
 
-          <p className="mt-1 text-sm text-[#697d90]">
-            카메라 영상과 볼트 체결 분석 결과를
-            실시간으로 확인합니다.
+          <p className="mt-1 text-sm text-[#64748b]">
+            영상과 주요 판정 결과를 한 화면에서
+            즉시 확인합니다.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={reconnectStream}
-          className="flex items-center gap-2 rounded-lg border border-[#b9cad8] bg-white px-4 py-2 text-sm font-semibold text-[#0066a6] shadow-sm hover:bg-[#f4f9fc]"
-        >
-          <RefreshCw size={17} />
-          영상 재연결
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 rounded-xl border border-[#d8e0eb] bg-white px-4 py-2.5 text-sm font-bold text-[#172033] shadow-sm">
+            <span
+              className={[
+                'h-2.5 w-2.5 rounded-full',
+                isLive
+                  ? 'animate-pulse bg-[#42d6af]'
+                  : 'bg-slate-400',
+              ].join(' ')}
+            />
+            {isLive ? '분석 중 · 10 FPS' : '연결 대기'}
+          </div>
+
+          <button
+            type="button"
+            onClick={reconnectStream}
+            className="flex items-center gap-2 rounded-xl bg-[#003478] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#002b63]"
+          >
+            <RefreshCw size={17} />
+            영상 재연결
+          </button>
+        </div>
       </header>
 
-      <section className="relative h-[calc(100vh-170px)] min-h-[600px] overflow-hidden rounded-2xl border border-[#243647] bg-[#050b12] shadow-xl">
-        <img
-          key={streamKey}
-          src={getVisionStreamUrl(streamKey)}
-          alt="실시간 볼트 체결 검사 영상"
-          className="h-full w-full object-contain"
-          onLoad={() => setStreamError(false)}
-          onError={() => setStreamError(true)}
-        />
+      <main className="grid flex-1 gap-4 xl:min-h-[calc(100vh-132px)] xl:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="flex min-h-[560px] flex-col overflow-hidden rounded-2xl border border-[#dbe3ee] bg-white shadow-[0_8px_30px_rgba(23,32,51,0.08)]">
+          <div className="relative min-h-[480px] flex-1 overflow-hidden bg-[#0b1220]">
+            <img
+              key={streamKey}
+              src={getVisionStreamUrl(streamKey)}
+              alt="실시간 볼트 체결 검사 영상"
+              className="h-full w-full object-contain"
+              onLoad={() => setStreamError(false)}
+              onError={() => setStreamError(true)}
+            />
 
-        <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-sm font-bold text-white backdrop-blur">
-          <span
-            className={[
-              'h-2.5 w-2.5 rounded-full',
-              isLive
-                ? 'animate-pulse bg-red-500'
-                : 'bg-slate-500',
-            ].join(' ')}
-          />
-
-          {isLive ? 'LIVE' : '연결 대기'}
-        </div>
-
-        {streamError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#050b12]/95 p-8 text-center text-white">
-            <div>
-              <WifiOff
-                size={44}
-                className="mx-auto text-red-400"
+            <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-white/15 bg-[#111827]/85 px-4 py-2 text-sm font-bold text-white backdrop-blur">
+              <span
+                className={[
+                  'h-2.5 w-2.5 rounded-full',
+                  isLive
+                    ? 'animate-pulse bg-[#42d6af]'
+                    : 'bg-slate-500',
+                ].join(' ')}
               />
-
-              <p className="mt-4 text-lg font-bold">
-                영상 스트림에 연결할 수 없습니다.
-              </p>
-
-              <p className="mt-2 text-sm text-slate-300">
-                Flask 서버와 카메라 연결 상태를
-                확인한 후 영상 재연결을 눌러주세요.
-              </p>
+              {isLive ? 'LIVE · 분석 중' : '연결 대기'}
             </div>
-          </div>
-        )}
 
-        <aside className="absolute inset-x-3 bottom-3 max-h-[52%] overflow-y-auto rounded-xl border border-white/15 bg-[#071724]/90 p-4 text-white shadow-2xl backdrop-blur-md lg:inset-y-4 lg:left-auto lg:right-4 lg:max-h-none lg:w-[360px]">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            {latestInspection && (
+              <div className="absolute right-5 top-5 rounded-full border border-white/15 bg-[#111827]/85 px-4 py-2 text-xs font-semibold text-white backdrop-blur">
+                {latestInspection.metrics.modelType}
+              </div>
+            )}
+
+            {streamError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-[#050b12]/95 p-8 text-center text-white">
+                <div>
+                  <WifiOff
+                    size={44}
+                    className="mx-auto text-red-400"
+                  />
+
+                  <p className="mt-4 text-lg font-bold">
+                    영상 스트림에 연결할 수 없습니다.
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-300">
+                    Flask 서버와 카메라 연결 상태를
+                    확인한 후 영상 재연결을 눌러주세요.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[#e5eaf1] px-5 py-3 text-xs text-[#64748b]">
+            <span className="font-bold text-[#172033]">
+              실시간 분석
+            </span>
+            <span>
+              추론 시간{' '}
+              {latestInspection
+                ? `${latestInspection.metrics.inferenceTimeMs.toFixed(1)} ms`
+                : '-'}
+            </span>
+            <span>검출 객체 {counts.total}개</span>
+            <span>
+              서버 {systemStatus?.visionWorkerRunning ? '정상' : '대기'}
+            </span>
+            <span className="ml-auto font-bold text-[#172033]">
+              화면을 크게 보려면 브라우저 전체 화면을 사용하세요.
+            </span>
+          </footer>
+        </section>
+
+        <aside className="flex flex-col rounded-2xl border border-[#dbe3ee] bg-white p-3 shadow-[0_8px_30px_rgba(23,32,51,0.08)] sm:p-4">
+          <div className="flex items-center justify-between px-1 pb-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#64748b]">
                 Realtime inspection
               </p>
-
-              <h2 className="mt-1 text-lg font-bold">
+              <h2 className="mt-1 text-xl font-black text-[#172033]">
                 현재 검사 결과
               </h2>
             </div>
@@ -248,24 +296,23 @@ export default function RealtimeInspectionPage() {
             {isLive ? (
               <Wifi
                 size={22}
-                className="text-emerald-400"
+                className="text-[#00a98f]"
               />
             ) : (
               <WifiOff
                 size={22}
-                className="text-red-400"
+                className="text-red-500"
               />
             )}
           </div>
 
           {(inspectionError || statusError) && (
-            <div className="mt-4 rounded-lg border border-red-400/30 bg-red-500/15 p-3 text-sm text-red-100">
+            <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               <div className="flex items-start gap-2">
                 <AlertTriangle
                   size={18}
                   className="mt-0.5 shrink-0"
                 />
-
                 <span>
                   {inspectionError || statusError}
                 </span>
@@ -274,185 +321,200 @@ export default function RealtimeInspectionPage() {
           )}
 
           {!latestInspection ? (
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-5 text-center">
-              <Activity
-                size={32}
-                className="mx-auto animate-pulse text-cyan-300"
-              />
-
-              <p className="mt-3 font-bold">
-                첫 분석 결과 대기 중
-              </p>
-
-              <p className="mt-1 text-sm text-slate-400">
-                Vision Worker가 첫 프레임을 처리하면
-                결과가 자동으로 표시됩니다.
-              </p>
+            <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[#cdd8e5] bg-[#f7f9fc] p-8 text-center">
+              <div>
+                <Activity
+                  size={38}
+                  className="mx-auto animate-pulse text-[#185aa5]"
+                />
+                <p className="mt-4 font-bold text-[#172033]">
+                  첫 분석 결과 대기 중
+                </p>
+                <p className="mt-2 text-sm text-[#64748b]">
+                  첫 프레임 처리가 완료되면 결과가
+                  자동으로 표시됩니다.
+                </p>
+              </div>
             </div>
           ) : (
             <>
               <OverallResult
-                status={
-                  latestInspection.overallResult
-                }
+                status={latestInspection.overallResult}
+                inspectionTime={latestInspection.inspectionTime}
               />
 
-              <div className="mt-4 space-y-2">
-                <StatusRow
-                  label="조립 상태"
-                  status={
-                    latestInspection
-                      .assemblySequenceResult
-                  }
-                />
+              <h3 className="mb-2 mt-4 px-1 text-sm font-black text-[#172033]">
+                검사 항목
+              </h3>
 
-                <StatusRow
+              <div className="grid grid-cols-2 gap-2.5">
+                <StatusCard
+                  label="구성품 개수"
+                  status={latestInspection.missingComponentResult}
+                />
+                <StatusCard
+                  label="조립 순서"
+                  status={latestInspection.assemblySequenceResult}
+                />
+                <StatusCard
                   label="체결 상태"
-                  status={
-                    latestInspection
-                      .fasteningQualityResult
-                  }
-                />
-
-                <StatusRow
-                  label="정렬 상태"
-                  status={
-                    latestInspection.alignmentResult
-                  }
+                  status={latestInspection.fasteningResult}
                 />
               </div>
 
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                <MetricCard
-                  label="볼트"
-                  value={counts.bolt}
-                />
+              <div className="mt-3 rounded-xl border border-[#e0e6ef] bg-[#f7f9fc] p-3.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-black text-[#64748b]">
+                    검출 부품
+                  </p>
+                  <span className="rounded-full bg-[#dff7f0] px-3 py-1 text-xs font-black text-[#08765c]">
+                    전체 {counts.total}
+                  </span>
+                </div>
 
-                <MetricCard
-                  label="와셔"
-                  value={counts.washer}
-                />
-
-                <MetricCard
-                  label="나사산"
-                  value={counts.thread}
-                />
-
-                <MetricCard
-                  label="전체"
-                  value={counts.total}
-                />
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  <MetricCard label="볼트" value={counts.bolt} />
+                  <MetricCard label="와셔" value={counts.washer} />
+                  <MetricCard label="나사산" value={counts.thread} />
+                </div>
               </div>
 
-              <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-3">
-                <InfoRow
-                  label="추론 시간"
-                  value={`${latestInspection.metrics.inferenceTimeMs.toFixed(1)} ms`}
-                />
-
-                <InfoRow
-                  label="모델"
-                  value={
-                    latestInspection.metrics.modelType
-                  }
-                />
-
-                <InfoRow
-                  label="검사 시각"
-                  value={formatDateTime(
-                    latestInspection.inspectionTime,
-                  )}
-                />
-
-                {latestInspection.metrics
-                  .fasteningEvaluated && (
-                  <>
-                    <InfoRow
-                      label="나사산 길이"
-                      value={formatCentimeter(
-                        latestInspection.metrics
-                          .measuredThreadCm,
-                      )}
-                    />
-
-                    <InfoRow
-                      label="판정 기준"
-                      value={formatCentimeter(
-                        latestInspection.metrics
-                          .threadThresholdCm,
-                      )}
-                    />
-                  </>
-                )}
-              </div>
-
-              {latestInspection.metrics
-                .assemblyReasons.length > 0 && (
-                <div className="mt-4 rounded-lg border border-red-400/30 bg-red-500/10 p-3">
-                  <p className="text-sm font-bold text-red-200">
+              {assemblyReasons.length > 0 && (
+                <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3.5">
+                  <p className="text-sm font-black text-red-700">
                     불량 원인
                   </p>
-
-                  <ul className="mt-2 space-y-1 text-sm text-red-100">
-                    {latestInspection.metrics
-                      .assemblyReasons.map(
-                        (reason) => (
-                          <li key={reason}>
-                            · {getReasonLabel(reason)}
-                          </li>
-                        ),
-                      )}
+                  <ul className="mt-2 space-y-1 text-sm text-red-700">
+                    {assemblyReasons.map((reason) => (
+                      <li key={reason}>
+                        · {getReasonLabel(reason)}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               )}
+
+              <div
+                className={[
+                  'mt-3 rounded-xl border p-3.5',
+                  persistenceReady
+                    ? 'border-[#c9daf7] bg-[#eef4ff]'
+                    : 'border-amber-200 bg-amber-50',
+                ].join(' ')}
+              >
+                <div className="flex items-start gap-3">
+                  <Database
+                    size={21}
+                    className={
+                      persistenceReady
+                        ? 'text-[#185aa5]'
+                        : 'text-amber-600'
+                    }
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black text-[#172033]">
+                      {persistenceReady
+                        ? '검사 결과 저장 활성'
+                        : 'DB 저장 상태 확인 필요'}
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-[#164b86]">
+                      정상 · 불량 모두 저장
+                    </p>
+                    <p className="mt-1 text-xs text-[#64748b]">
+                      이번 실행 저장{' '}
+                      {systemStatus?.persistedInspectionCount ?? 0}건
+                      {' · '}대기{' '}
+                      {systemStatus?.pendingPersistenceEvents ?? 0}건
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-xl border border-[#e0e6ef] bg-white p-3">
+                <InfoRow
+                  label="검사 시각"
+                  value={formatDateTime(latestInspection.inspectionTime)}
+                />
+              </div>
             </>
           )}
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-4 gap-2">
             <ConnectionCard
               icon={Video}
               label="카메라"
-              connected={
-                systemStatus?.cameraConnected ??
-                false
-              }
+              connected={systemStatus?.cameraConnected ?? false}
             />
-
             <ConnectionCard
               icon={Server}
-              label="분석 서버"
-              connected={
-                systemStatus?.visionWorkerRunning ??
-                false
-              }
+              label="서버"
+              connected={systemStatus?.visionWorkerRunning ?? false}
             />
-
             <ConnectionCard
               icon={Database}
-              label="데이터베이스"
-              connected={
-                systemStatus?.databaseConnected ??
-                false
-              }
+              label="DB"
+              connected={systemStatus?.databaseConnected ?? false}
             />
-
             <ConnectionCard
               icon={Activity}
               label="모델"
-              connected={
-                systemStatus?.modelLoaded ?? false
-              }
+              connected={systemStatus?.modelLoaded ?? false}
             />
           </div>
         </aside>
-      </section>
+      </main>
     </div>
   )
 }
 
 function OverallResult({
   status,
+  inspectionTime,
 }: {
+  status: ResultStatus
+  inspectionTime: string
+}) {
+  const isNormal = status === 'NORMAL'
+
+  return (
+    <div
+      className={[
+        'rounded-2xl border p-5 text-white',
+        isNormal
+          ? 'border-[#00a98f] bg-[#00a98f]'
+          : 'border-red-600 bg-red-600',
+      ].join(' ')}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold text-white/85">
+            현재 프레임 최종 판정
+          </p>
+          <p className="mt-3 text-5xl font-black tracking-tight">
+            {getStatusLabel(status)}
+          </p>
+        </div>
+
+        {isNormal ? (
+          <CheckCircle2 size={38} />
+        ) : (
+          <AlertTriangle size={38} />
+        )}
+      </div>
+
+      <div className="mt-4 flex items-center gap-2 text-xs font-bold text-white/90">
+        <span className="h-2 w-2 rounded-full bg-white/80" />
+        {formatTimeOnly(inspectionTime)} · 실시간 갱신
+      </div>
+    </div>
+  )
+}
+
+function StatusCard({
+  label,
+  status,
+}: {
+  label: string
   status: ResultStatus
 }) {
   const isNormal = status === 'NORMAL'
@@ -460,62 +522,25 @@ function OverallResult({
   return (
     <div
       className={[
-        'mt-4 rounded-xl border p-4',
+        'min-h-28 rounded-xl border p-4',
         isNormal
-          ? 'border-emerald-400/30 bg-emerald-500/15'
-          : 'border-red-400/30 bg-red-500/15',
+          ? 'border-[#b8eadb] bg-[#f1fbf8] text-[#08765c]'
+          : 'border-red-200 bg-red-50 text-red-700',
       ].join(' ')}
     >
-      <div className="flex items-center gap-3">
-        {isNormal ? (
-          <CheckCircle2
-            size={31}
-            className="text-emerald-400"
-          />
-        ) : (
-          <AlertTriangle
-            size={31}
-            className="text-red-400"
-          />
-        )}
-
-        <div>
-          <p className="text-xs font-semibold text-slate-300">
-            최종 판정
-          </p>
-
-          <p
-            className={[
-              'text-2xl font-black',
-              isNormal
-                ? 'text-emerald-300'
-                : 'text-red-300',
-            ].join(' ')}
-          >
-            {getStatusLabel(status)}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function StatusRow({
-  label,
-  status,
-}: {
-  label: string
-  status: ResultStatus
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2.5">
-      <span className="text-sm text-slate-300">
+      <p className="text-sm font-bold text-[#64748b]">
         {label}
-      </span>
-
-      <span className={getStatusClass(status)}>
-        {getStatusLabel(status)}
-      </span>
+      </p>
+      <div className="mt-4 flex items-center gap-2">
+        {isNormal ? (
+          <CheckCircle2 size={22} />
+        ) : (
+          <AlertTriangle size={22} />
+        )}
+        <span className="text-2xl font-black">
+          {getStatusLabel(status)}
+        </span>
+      </div>
     </div>
   )
 }
@@ -528,12 +553,11 @@ function MetricCard({
   value: number
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-2 text-center">
-      <p className="text-xs text-slate-400">
+    <div className="rounded-lg border border-[#e0e6ef] bg-white px-2 py-2.5 text-center">
+      <p className="text-xs font-bold text-[#64748b]">
         {label}
       </p>
-
-      <p className="mt-1 text-lg font-black">
+      <p className="mt-1 text-xl font-black text-[#172033]">
         {value}
       </p>
     </div>
@@ -548,15 +572,14 @@ function InfoRow({
   value: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-1.5 text-sm">
-      <span className="flex items-center gap-1.5 text-slate-400">
+    <div className="flex items-center justify-between gap-4 py-1.5 text-xs">
+      <span className="flex items-center gap-1.5 text-[#64748b]">
         {label === '검사 시각' && (
           <Clock3 size={14} />
         )}
         {label}
       </span>
-
-      <span className="truncate font-semibold text-slate-100">
+      <span className="truncate font-bold text-[#172033]">
         {value}
       </span>
     </div>
@@ -573,25 +596,19 @@ function ConnectionCard({
   connected: boolean
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5">
+    <div className="rounded-lg border border-[#e0e6ef] bg-[#f7f9fc] p-2 text-center">
       <Icon
-        size={17}
-        className={
+        size={16}
+        className={[
+          'mx-auto',
           connected
-            ? 'text-emerald-400'
-            : 'text-red-400'
-        }
+            ? 'text-[#00a98f]'
+            : 'text-red-500',
+        ].join(' ')}
       />
-
-      <div>
-        <p className="text-xs text-slate-400">
-          {label}
-        </p>
-
-        <p className="text-xs font-bold">
-          {connected ? '정상' : '연결 안 됨'}
-        </p>
-      </div>
+      <p className="mt-1 text-[11px] font-bold text-[#64748b]">
+        {label}
+      </p>
     </div>
   )
 }
@@ -600,25 +617,9 @@ function getStatusLabel(status: ResultStatus) {
   switch (status) {
     case 'NORMAL':
       return '정상'
-
     case 'DEFECT':
+    case 'NOT_EVALUATED':
       return '불량'
-
-    case 'NOT_EVALUATED':
-      return '미평가'
-  }
-}
-
-function getStatusClass(status: ResultStatus) {
-  switch (status) {
-    case 'NORMAL':
-      return 'rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-bold text-emerald-300'
-
-    case 'DEFECT':
-      return 'rounded-full bg-red-400/15 px-2.5 py-1 text-xs font-bold text-red-300'
-
-    case 'NOT_EVALUATED':
-      return 'rounded-full bg-slate-400/15 px-2.5 py-1 text-xs font-bold text-slate-300'
   }
 }
 
@@ -634,42 +635,34 @@ function formatDateTime(value: string) {
   })
 }
 
-function formatCentimeter(value?: number) {
-  if (value == null) {
+function formatTimeOnly(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
     return '-'
   }
 
-  return `${value.toFixed(2)} cm`
+  return date.toLocaleTimeString('ko-KR', {
+    hour12: false,
+  })
 }
 
 function getReasonLabel(reason: string) {
-  if (reason === 'no_thread') {
-    return '나사산이 검출되지 않았습니다.'
+  const labels: Record<string, string> = {
+    THREAD_MISSING: '나사산이 검출되지 않았습니다.',
+    AXIS_FAIL: '볼트 축을 계산할 수 없습니다.',
+    NUT_MISSING: '너트가 누락되었습니다.',
+    NUT_EXTRA: '너트가 기준 수량보다 많습니다.',
+    WASHER_MISSING_HEAD_SIDE: '볼트 머리 쪽 와셔가 누락되었습니다.',
+    WASHER_MISSING_NUT_SIDE: '너트 쪽 와셔가 누락되었습니다.',
+    WASHER_MISSING: '와셔가 누락되었습니다.',
+    WASHER_EXTRA: '와셔가 기준 수량보다 많습니다.',
+    ORDER_ERROR: '조립 순서가 올바르지 않습니다.',
+    LOOSE: '나사산 노출이 부족하여 체결 불량입니다.',
+    GAP: '너트와 와셔 사이의 틈이 허용 범위를 초과했습니다.',
+    NUT_NOT_SEATED: '너트가 정상 위치까지 체결되지 않았습니다.',
+    FASTEN_UNMEASURED: '체결 상태를 측정할 수 없습니다.',
   }
 
-  if (reason === 'no_bolt') {
-    return '볼트가 검출되지 않았습니다.'
-  }
-
-  if (reason === 'no_nut') {
-    return '너트가 검출되지 않았습니다.'
-  }
-
-  if (reason.startsWith('dup_thread')) {
-    return '나사산이 중복 검출되었습니다.'
-  }
-
-  if (reason.startsWith('extra_bolt')) {
-    return '볼트가 기준 수량보다 많습니다.'
-  }
-
-  if (reason.startsWith('washer_low')) {
-    return '와셔가 기준 수량보다 적습니다.'
-  }
-
-  if (reason.startsWith('washer_high')) {
-    return '와셔가 기준 수량보다 많습니다.'
-  }
-
-  return reason
+  return labels[reason] ?? reason
 }

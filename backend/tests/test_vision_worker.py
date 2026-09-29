@@ -86,13 +86,14 @@ def test_worker_processes_raw_frame_once_and_updates_latest_jpeg_buffer():
         assert latest.get(timeout=0).value.overall_result == NORMAL
         assert latest.get(timeout=0).value.metrics["processingTimeMs"] >= 0
         assert latest.get(timeout=0).value.metrics["visionFps"] is None
-        assert events == []
+        assert len(events) == 1
+        assert events[0].overall_result == NORMAL
     finally:
         worker.stop()
     assert worker.running is False
 
 
-def test_worker_emits_one_event_per_defect_episode():
+def test_worker_emits_every_sampled_result():
     events = []
     manager = _event_manager(reset_frames=2)
     worker, raw, _, encoded, _ = _worker(manager, events.append)
@@ -102,12 +103,20 @@ def test_worker_emits_one_event_per_defect_episode():
         for value in (1, 1, 1):
             snapshot = _put_and_wait(raw, encoded, value, version)
             version = snapshot.version
-        assert len(events) == 1
+        assert len(events) == 3
 
         for value in (0, 0, 1, 1):
             snapshot = _put_and_wait(raw, encoded, value, version)
             version = snapshot.version
-        assert len(events) == 2
+        assert [event.overall_result for event in events] == [
+            DEFECT,
+            DEFECT,
+            DEFECT,
+            NORMAL,
+            NORMAL,
+            DEFECT,
+            DEFECT,
+        ]
     finally:
         worker.stop()
 
@@ -133,6 +142,6 @@ def test_event_callback_failure_does_not_stop_vision_worker():
         second = _put_and_wait(raw, encoded, 0, first.version)
         assert second.version > first.version
         assert worker.running is True
-        assert len(callback_calls) == 1
+        assert len(callback_calls) == 2
     finally:
         worker.stop()
