@@ -107,10 +107,6 @@ class UNetSegPredictor:
         roi_smooth: float = 0.5,
     ) -> None:
         self.device, self.device_name = self._resolve_device(device_name)
-        if self.device.type == "cuda":
-            torch.backends.cudnn.benchmark = True
-            torch.backends.cuda.matmul.allow_tf32 = True
-            torch.backends.cudnn.allow_tf32 = True
         self.locator_width = max(32, locator_width)
         self.fine_size = max(32, fine_size)
         self.roi_margin = max(1.0, roi_margin)
@@ -212,10 +208,6 @@ class UNetSegPredictor:
             .unsqueeze(0)
             .to(self.device)
         )
-        if self.device.type == "cuda":
-            tensor = tensor.contiguous(
-                memory_format=torch.channels_last
-            )
         with torch.inference_mode(), torch.autocast(
             self.device.type, enabled=self.use_amp
         ):
@@ -347,10 +339,7 @@ class UNetSegPredictor:
             int(checkpoint["n_classes"]), str(checkpoint["encoder"])
         )
         model.load_state_dict(checkpoint["model"], strict=True)
-        model = model.to(self.device).eval()
-        if self.device.type == "cuda":
-            model = model.to(memory_format=torch.channels_last)
-        return model, checkpoint
+        return model.to(self.device).eval(), checkpoint
 
     @staticmethod
     def _resolve_device(device_name: str) -> tuple[torch.device, str]:

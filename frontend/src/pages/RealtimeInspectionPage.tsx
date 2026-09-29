@@ -78,7 +78,7 @@ export default function RealtimeInspectionPage() {
 
     const timer = window.setInterval(() => {
       void refreshLatestInspection()
-    }, 200)
+    }, 1000)
 
     return () => {
       disposed = true
@@ -125,7 +125,7 @@ export default function RealtimeInspectionPage() {
 
     const timer = window.setInterval(() => {
       void refreshSystemStatus()
-    }, 1000)
+    }, 3000)
 
     return () => {
       disposed = true
@@ -218,8 +218,6 @@ export default function RealtimeInspectionPage() {
               key={streamKey}
               src={getVisionStreamUrl(streamKey)}
               alt="실시간 볼트 체결 검사 영상"
-              loading="eager"
-              fetchPriority="high"
               className="h-full w-full object-contain"
               onLoad={() => setStreamError(false)}
               onError={() => setStreamError(true)}

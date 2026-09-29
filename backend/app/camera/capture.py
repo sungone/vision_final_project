@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import threading
 import time
 import logging
@@ -62,13 +61,8 @@ class CameraCaptureWorker:
             while not self._stop.is_set():
                 capture = None
                 try:
-                    capture = self._open_capture()
+                    capture = self.capture_factory(self.camera_index)
                     self._capture = capture
-                    capture.set(
-                        cv2.CAP_PROP_FOURCC,
-                        cv2.VideoWriter_fourcc(*"MJPG"),
-                    )
-                    capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                     capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
                     capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
                     capture.set(cv2.CAP_PROP_FPS, self.fps)
@@ -97,24 +91,6 @@ class CameraCaptureWorker:
         finally:
             self.connected = False
             self.running = False
-
-    def _open_capture(self):
-        if (
-            os.name == "nt"
-            and isinstance(self.camera_index, int)
-            and self.capture_factory is cv2.VideoCapture
-        ):
-            capture = self.capture_factory(
-                self.camera_index,
-                cv2.CAP_DSHOW,
-            )
-            if capture.isOpened():
-                return capture
-            capture.release()
-            logger.warning(
-                "DirectShow camera open failed; falling back to the default backend"
-            )
-        return self.capture_factory(self.camera_index)
 
 
 def _camera_source(value: str):

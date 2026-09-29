@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import time
+
 from app.camera.frame_buffer import LatestValueBuffer
 
 
 BOUNDARY = b"frame"
 
 
-def generate_mjpeg(encoded_frames: LatestValueBuffer[bytes], _fps: float):
+def generate_mjpeg(encoded_frames: LatestValueBuffer[bytes], fps: float):
+    interval = 1.0 / max(0.1, fps)
     last_version = 0
     while True:
         snapshot = encoded_frames.get(after_version=last_version, timeout=2.0)
@@ -20,4 +23,5 @@ def generate_mjpeg(encoded_frames: LatestValueBuffer[bytes], _fps: float):
             b"Content-Length: " + str(len(payload)).encode("ascii") + b"\r\n\r\n"
             + payload + b"\r\n"
         )
+        time.sleep(interval)
 
