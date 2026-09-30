@@ -1,238 +1,266 @@
-# Vision Inspection Backend MVP
+# Bolt Vision Inspection System
 
-USB/UVC 또는 DroidCam 가상 카메라 영상에 학습된 2단계 U-Net segmentation 모델을 적용하고 Bolt, Washer, Thread 영역과 체결 판정을 시각화해 React로 전달하는 실시간 검사 애플리케이션입니다. YOLO26과 Mask R-CNN processor도 환경변수로 선택할 수 있습니다.
+카메라 영상에서 볼트·너트·와셔·나사산을 segmentation 모델로 검출하고, 구성품·조립 순서·체결 상태를 판정하는 머신비전 검사 시스템입니다. Flask가 실시간 검사 결과와 MJPEG 영상을 제공하고 React UI에서 현재 상태와 저장된 검사 이력을 확인합니다.
 
-U-Net 결과는 공통 Decision Engine으로 전달되어 부품 구성/순서와 나사산 노출 길이를 기반으로 `NORMAL`/`DEFECT`를 판정합니다.
+## 주요 기능
 
-## 핵심 구조
+- USB/UVC 카메라 프레임 캡처와 최신 프레임 버퍼링
+- U-Net, YOLO segmentation, Mask R-CNN 중 선택한 모델로 부품 영역 검출
+- 볼트/너트/와셔 수량, 조립 순서, 나사산 노출 비율, 너트-와셔 간격, 너트 기울기 측정
+- 최신 검사 JSON, MJPEG 스트림, 시스템 상태 API 제공
+- 설정된 주기로 검사 결과를 비동기 저장하고 PostgreSQL에서 이력 조회
+- 카메라 없이도 JPG/PNG 파일을 업로드해 단건 검사
+- Backend와 Frontend를 오직 동일 PC의 localhost에서 실행
 
-```text
-USB/UVC Camera → OpenCV Capture Worker → Latest Raw Frame
-                                      ↓
-                    U-Net Locator → Fine Vision Worker
-                                      ↓
-                  Component Extraction → Decision Engine
-                                      ↓
-                      Latest Overlay Frame + Result
-                              ↙                    ↘
-                      JPEG / MJPEG              Event Manager
-                              ↓                    ↓
-                            React              PostgreSQL
-                                                   ↓
-                                             REST GET API
-```
+## 기술 스택
 
-- Camera capture, vision processing, MJPEG response는 서로 다른 실행 경로를 사용합니다.
-- 여러 브라우저가 접속해도 camera 또는 vision worker가 추가로 생성되지 않습니다.
-- 최신 프레임 하나만 유지해 지연이 누적되는 queue backlog를 방지합니다.
-- `DEFECT` frame마다 저장하지 않고 상태 전이로 확정된 inspection event만 저장합니다.
-- 모델은 서버 시작 시 한 번만 로드되며 client 수가 늘어도 inference가 중복되지 않습니다.
-- Bolt와 Thread/Nut는 파란색, Washer는 노란색 mask overlay로 표시됩니다.
+| 영역 | 기술 |
+|---|---|
+| Backend | Python, Flask, Flask-SQLAlchemy |
+| Vision | OpenCV, PyTorch, Torchvision, Ultralytics |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS |
+| Database | PostgreSQL 16 |
+| Infra | Docker Compose |
 
-자세한 설계는 [Architecture](docs/ARCHITECTURE.md), API 계약은 [API](docs/API.md), 저장 모델은 [Database](docs/DATABASE.md)를 참고하세요.
+## 로컬 실행 방법
 
-`backend/app` 패키지별 책임과 의존 관계는 [Backend App Structure](docs/BACKEND_APP_STRUCTURE.md)를 참고하세요.
+기본 실행 경로는 `Browser → React(127.0.0.1:5174) → Flask(127.0.0.1:5000)`입니다. Backend과 Frontend는 `0.0.0.0`에 바인딩하지 않으며, PostgreSQL 포트도 호스트의 `127.0.0.1`에만 공개됩니다.
 
-모델별 Vision 파일 구조와 실행 흐름은 [Vision Package Flow](docs/VISION_PIPELINE.md)를 참고하세요.
+### 1. PostgreSQL
 
-최종 Backend 아키텍처, 스레드, 전체 파일 역할, DB/API와 실행 순서는 [Backend Final Guide](docs/BACKEND_FINAL_GUIDE.md)를 참고하세요.
-
-외부 HTTPS 접속을 위한 Cloudflare Tunnel 설정은 [Cloudflare Tunnel 실행 가이드](docs/CLOUDFLARE_TUNNEL.md)를 참고하세요.
-
-## 요구 사항
-
-- Python 3.11 이상
-- PostgreSQL 16 권장
-- OpenCV가 인식할 수 있는 USB/UVC 카메라
-- Docker Compose는 PostgreSQL 실행에만 사용합니다.
-
-## 로컬 실행
-
-USB/UVC 카메라는 Windows 호스트의 OpenCV가 직접 사용합니다. PostgreSQL만 Docker Compose로 실행하고 Flask 백엔드는 Windows 호스트에서 실행합니다.
-
-### 1. PostgreSQL 실행
+프로젝트 루트에서 DB 컨테이너를 실행합니다.
 
 ```powershell
+cd C:\sungwon\vision_final_project
 docker compose up -d db
 ```
 
-최초 실행 또는 schema 변경 후 migration을 적용합니다.
+최초 실행 또는 schema 변경 후 migration SQL을 적용합니다.
 
 ```powershell
 Get-Content -Raw backend\migrations\001_create_inspections.sql |
   docker compose exec -T db psql -U vision -d vision_inspection
 ```
 
-기본 개발 DB는 다음과 같습니다.
+기본 개발 DB는 `vision_inspection`, 사용자와 비밀번호는 모두 `vision`, 호스트 포트는 `127.0.0.1:5432`입니다.
 
-```text
-database: vision_inspection
-user:     vision
-password: vision
-port:     5432
-```
+### 2. Backend
 
-이 값은 로컬 개발 전용입니다. 공유 또는 운영 환경에서는 반드시 환경변수로 변경하세요.
-
-### 2. Python 환경 준비
+Windows PowerShell 기준입니다.
 
 ```powershell
+cd C:\sungwon\vision_final_project
+
 python -m venv .venv
-.\.venv\Scripts\python -m pip install --upgrade pip
-.\.venv\Scripts\python -m pip install -r backend\requirements.txt
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r backend\requirements.txt
+
+Copy-Item backend\.env.example backend\.env.local
+python backend\run.py
 ```
 
-### 3. 환경변수 설정
+`backend/.env.local`에서 카메라 인덱스와 사용할 Vision 모델을 환경에 맞게 조정합니다. 로컬 접속 설정은 다음과 같습니다.
 
-PowerShell 예시:
-
-```powershell
-$env:DATABASE_URL = "postgresql+psycopg://vision:vision@localhost:5432/vision_inspection"
-$env:CAMERA_INDEX = "2"
-$env:CAMERA_WIDTH = "1280"
-$env:CAMERA_HEIGHT = "720"
-$env:CAMERA_FPS = "30"
-$env:VISION_FPS = "10"
-$env:STREAM_FPS = "10"
-$env:JPEG_QUALITY = "80"
-$env:VISION_PROCESSOR = "unet"
-$env:UNET_FINE_MODEL_PATH = "../output/u-net/fine/best.pt"
-$env:UNET_LOCATOR_MODEL_PATH = "../output/u-net/locator/best.pt"
-$env:UNET_IMAGE_SIZE = "640"
-$env:UNET_USE_LOCATOR = "true"
-$env:UNET_MIN_COMPONENT_AREA = "500"
-$env:VISION_DEVICE = "auto"
-$env:MASK_SCORE_THRESHOLD = "0.70"
-$env:MASK_BINARY_THRESHOLD = "0.50"
-$env:EVENT_SAMPLE_FPS = "1.0"
-$env:DEFECT_GEOMETRY_TOLERANCE_RATIO = "0.05"
-$env:NORMAL_RESET_FRAMES = "5"
-$env:PERSISTENCE_QUEUE_SIZE = "10"
-$env:PERSISTENCE_RETRY_SECONDS = "2"
-$env:DEFECT_STORAGE_DIR = "backend/storage/defects"
-$env:START_BACKGROUND_WORKERS = "true"
+```dotenv
+FLASK_HOST=127.0.0.1
+FLASK_PORT=5000
+CORS_ALLOWED_ORIGINS=http://localhost:5174,http://127.0.0.1:5174
 ```
 
-`CAMERA_INDEX`는 USB/UVC 카메라가 등록된 장치 번호로 변경하세요.
+Backend: <http://127.0.0.1:5000>
 
-### 4. Flask 실행
-
-```powershell
-.\.venv\Scripts\python backend\run.py
-```
-
-기본 주소는 `http://localhost:5000`입니다.
-
-React Viewer는 별도 터미널에서 실행합니다.
+### 3. Frontend
 
 ```powershell
-cd frontend
+cd C:\sungwon\vision_final_project\frontend
 npm install
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-기본 React 주소는 `http://localhost:5173`이며 `/api` 요청은 Flask `5000` 포트로 proxy됩니다.
+Frontend: <http://127.0.0.1:5174>  
+`localhost` 표기를 선호하면 <http://localhost:5174>로도 접속할 수 있습니다. `VITE_API_BASE_URL` 기본 예제는 `http://127.0.0.1:5000`입니다.
 
-## 동작 확인
+## 시스템 아키텍처
 
-상태 조회:
+```mermaid
+flowchart TD
+    Camera[USB/UVC Camera] --> Capture[CameraCaptureWorker]
+    Capture --> RawBuffer[LatestFrameBuffer]
+    RawBuffer --> Worker[VisionWorker]
+    Worker --> Processor[Vision Processor]
+    Processor --> Predictor[Predictor]
+    Predictor --> PostProcessor[Segmentation PostProcessor]
+    PostProcessor --> Decision[Decision Engine]
+    Decision --> Visualizer[Visualizer]
+    Visualizer --> Result[InspectionResult]
 
-```powershell
-Invoke-RestMethod http://localhost:5000/api/v1/system/status
+    Result --> Latest[latest_results buffer]
+    Latest --> LatestAPI[Latest Result REST API]
+    LatestAPI --> React[React UI]
+
+    Result --> JPEG[JPEG Encoding]
+    JPEG --> Encoded[encoded_frames buffer]
+    Encoded --> Stream[MJPEG Stream API]
+    Stream --> React
+
+    Result --> EventManager[EventManager]
+    EventManager --> Persistence[Persistence Worker]
+    Persistence --> Service[InspectionService]
+    Service --> Repository[InspectionRepository]
+    Repository --> PostgreSQL[(PostgreSQL)]
 ```
 
-최신 검사 결과:
+### Vision
 
-```powershell
-Invoke-RestMethod http://localhost:5000/api/v1/inspection/latest
+`VISION_PROCESSOR` 환경변수로 `unet`, `yolo26`, `mask_rcnn`, `mock`을 선택합니다. 실제 segmentation 모델은 U-Net(ResNet18 encoder), YOLO segmentation, Mask R-CNN이며, 모두 공통 `InspectionDecisionEngine`과 `InspectionVisualizer`를 사용합니다.
+
+```mermaid
+flowchart LR
+    Frame[Camera Frame] --> Predictor[Model Predictor]
+    Predictor --> Segmentation[Segmentation Prediction]
+    Segmentation --> PostProcessor[Model PostProcessor]
+    PostProcessor --> Instances[DetectedInstance list]
+    Instances --> Decision[InspectionDecisionEngine]
+    Decision --> Result[InspectionResult]
+    Result --> Visualizer[InspectionVisualizer]
+    Visualizer --> Processed[Processed Frame]
 ```
 
-MJPEG 확인은 브라우저에서 다음 주소를 여세요.
+Decision Engine은 검출된 `bolt`, `washer`, `thread`를 기준으로 다음을 판정하거나 측정합니다.
+
+- 볼트 머리/너트와 와셔의 수량 및 누락·과다
+- `bolt → washer → washer → bolt` 조립 순서
+- 나사산 노출 비율과 설정 임계값
+- 너트-와셔 간격과 너트 기울기
+- `NORMAL`, `DEFECT`, `NOT_EVALUATED` 상태와 실패 코드
+
+### EventManager
+
+실시간 화면은 모든 처리 결과가 들어가는 `latest_results`를 조회합니다. EventManager는 API를 담당하지 않고 DB에 저장할 결과를 고정 주기로 샘플링해 persistence queue로 넘깁니다.
+
+현재 `backend/.env.local`의 `EVENT_SAMPLE_FPS=1.0`이므로 최대 초당 1건을 저장 경로로 보냅니다. 현재 구현은 sampled `NORMAL`/`DEFECT` 결과를 모두 저장하며, `DefectSignature` 유사도 비교는 EventManager 흐름에 연결되어 있지 않습니다.
+
+```mermaid
+flowchart TD
+    Result[InspectionResult] --> Latest[latest_results]
+    Latest --> LiveAPI[Latest Result API]
+    LiveAPI --> Frontend[React real-time UI]
+
+    Result --> Manager[InspectionEventManager]
+    Manager --> Sample[Fixed-rate sampling: 1 FPS]
+    Sample --> State[NORMAL or CONFIRMED_DEFECT state]
+    State --> Queue[Persistence queue]
+    Queue --> Worker[InspectionPersistenceWorker]
+    Worker --> Service[InspectionService]
+    Service --> Repository[InspectionRepository]
+    Repository --> DB[(PostgreSQL)]
+```
+
+### Frontend
+
+Frontend는 `src/services/inspectionApi.ts`를 통해 Flask의 `/api/v1` API를 호출합니다.
+
+```mermaid
+flowchart TD
+    React[React UI] --> Stream[GET /api/v1/stream]
+    Stream --> StreamView[Real-time MJPEG image]
+    React --> Latest[GET /api/v1/inspection/latest]
+    Latest --> LatestView[Latest inspection result]
+    React --> History[GET /api/v1/inspections]
+    History --> HistoryView[Inspection history]
+    React --> Detail["GET /api/v1/inspections/{id}"]
+    Detail --> DetailView[Inspection detail and image URL]
+    React --> Status[GET /api/v1/system/status]
+    Status --> StatusView[Camera, Vision, DB status]
+    React --> Upload[POST /api/v1/inspections]
+    Upload --> UploadView[Uploaded image inspection]
+```
+
+## API
+
+| Method | Endpoint | 설명 |
+|---|---|---|
+| GET | `/` | `/stream-test`로 redirect |
+| GET | `/favicon.ico` | 빈 `204` 응답 |
+| GET | `/stream-test` | Backend MJPEG 테스트 화면 |
+| GET | `/api/v1/health` | DB query 없이 Vision 모델 load 상태 확인 |
+| GET | `/api/v1/stream` | 실시간 Vision MJPEG 스트림 |
+| GET | `/api/v1/inspection/latest` | 메모리 버퍼의 최신 검사 결과. 아직 결과가 없으면 `204` |
+| POST | `/api/v1/inspections` | JPG/PNG 파일 단건 검사 및 저장 |
+| GET | `/api/v1/inspections?page=0&size=20` | 저장된 검사 이력 페이징 조회 |
+| GET | `/api/v1/inspections/{id}` | 검사 상세 정보 |
+| DELETE | `/api/v1/inspections/{id}` | 검사 DB record와 연결된 evidence image 삭제 |
+| GET | `/api/v1/inspections/{id}/image` | 저장된 검사 이미지 |
+| GET | `/api/v1/system/status` | Camera, Vision Worker, Persistence Worker, 모델, DB 상태 |
+
+`GET /api/v1/inspection/latest` 응답 예시입니다. 최상위 필드는 `InspectionResult.to_live_dict()`에서 반환하는 값만 사용했습니다.
+
+```json
+{
+  "inspectionTime": "2026-09-30T10:15:30.123000+00:00",
+  "overallResult": "DEFECT",
+  "componentResult": "NORMAL",
+  "assemblySequenceResult": "NORMAL",
+  "fasteningQualityResult": "DEFECT",
+  "missingComponentResult": "NORMAL",
+  "alignmentResult": "NORMAL",
+  "fasteningResult": "DEFECT",
+  "metrics": {
+    "modelType": "u-net-resnet18",
+    "detectedInstanceCount": 5,
+    "inferenceTimeMs": 63.42,
+    "detectedCounts": {
+      "bolt": 2,
+      "thread": 1,
+      "washer": 2
+    },
+    "threadExposureRatio": 1.2,
+    "threadExposureThreshold": 1.3,
+    "nutWasherGapRatio": 0.04,
+    "nutTiltDeg": 2.1,
+    "failureReasons": ["LOOSE"],
+    "fasteningEvaluated": true,
+    "detections": []
+  }
+}
+```
+
+## 프로젝트 구조
 
 ```text
-http://localhost:5000/api/v1/stream
+vision_final_project/
+├─ backend/                         # Flask Backend와 Vision runtime
+│  ├─ app/
+│  │  ├─ api/                    # REST API와 MJPEG route
+│  │  ├─ camera/                 # Camera worker와 latest frame buffer
+│  │  ├─ database/               # SQLAlchemy 초기화
+│  │  ├─ inspection/             # EventManager, persistence worker, service
+│  │  ├─ models/                 # Inspection DB model
+│  │  ├─ repositories/           # Inspection repository
+│  │  ├─ streaming/              # MJPEG generator
+│  │  └─ vision/                 # 모델별 predictor/postprocessor와 판정·시각화
+│  ├─ migrations/              # PostgreSQL 초기 schema
+│  ├─ storage/defects/         # 저장된 검사 증거 이미지
+│  ├─ tests/                   # Backend 회귀 테스트
+│  ├─ .env.example
+│  └─ run.py                   # Flask 실행 진입점
+├─ frontend/                        # React + TypeScript + Vite UI
+│  ├─ src/
+│  │  ├─ components/             # 공통 UI와 MJPEG viewer
+│  │  ├─ layouts/                # 앱 layout과 시스템 상태 조회
+│  │  ├─ pages/                  # Dashboard, 실시간 검사, 이력, 설정
+│  │  ├─ services/               # 실제 Flask API adapter
+│  │  └─ types/                  # API response type
+│  ├─ .env.example
+│  ├─ package.json
+│  └─ vite.config.ts
+├─ output/                          # U-Net, YOLO, Mask R-CNN 모델 파일
+├─ training/mask-rcnn/              # Mask R-CNN 학습·평가 코드
+├─ colab/                           # 학습 notebook
+├─ design/                          # UI wireframe과 mockup
+├─ ppt/                             # 프로젝트 발표 자료
+├─ compose.yaml                     # localhost 전용 PostgreSQL
+└─ README.md
 ```
-
-또는 React/HTML에서 사용합니다.
-
-```html
-<img src="http://localhost:5000/api/v1/stream" alt="Inspection stream">
-```
-
-## 환경설정
-
-| 변수 | 기본값 | 설명 |
-| --- | ---: | --- |
-| `DATABASE_URL` | 개발 환경별 설정 | PostgreSQL SQLAlchemy URL |
-| `CAMERA_INDEX` | `0` | OpenCV camera index |
-| `CAMERA_WIDTH` | `1280` | 요청 capture 폭 |
-| `CAMERA_HEIGHT` | `720` | 요청 capture 높이 |
-| `CAMERA_FPS` | `30` | camera capture 목표 FPS |
-| `VISION_FPS` | `10` | vision 처리 목표 FPS. 실제 속도는 장치 성능에 따라 제한됨 |
-| `STREAM_FPS` | `10` | MJPEG 전송 최대 FPS |
-| `JPEG_QUALITY` | `80` | OpenCV JPEG quality, 1–100 |
-| `VISION_PROCESSOR` | `unet` | `unet`, `yolo26`, `mask_rcnn`, `mock` 중 선택 |
-| `UNET_FINE_MODEL_PATH` | `output/u-net/fine/best.pt` | 정밀 segmentation checkpoint |
-| `UNET_LOCATOR_MODEL_PATH` | `output/u-net/locator/best.pt` | 관심 영역 탐색 checkpoint |
-| `UNET_IMAGE_SIZE` | `640` | U-Net 정사각형 입력 크기 |
-| `UNET_USE_LOCATOR` | `true` | locator ROI를 먼저 검출한 뒤 fine 모델을 실행할지 여부 |
-| `UNET_ROI_MARGIN_RATIO` | `0.15` | locator ROI 외곽 여유 비율 |
-| `UNET_MIN_COMPONENT_AREA` | `500` | semantic mask에서 instance로 인정할 최소 연결 영역 픽셀 수 |
-| `UNET_USE_HALF` | `true` | CUDA 사용 시 FP16 추론 사용 여부 |
-| `YOLO26_MODEL_PATH` | `output/yolo26/best.pt` | YOLO26 segmentation checkpoint |
-| `YOLO_IMAGE_SIZE` | `640` | YOLO inference 입력 크기 |
-| `YOLO_SCORE_THRESHOLD` | `0.70` | YOLO instance confidence threshold |
-| `YOLO_IOU_THRESHOLD` | `0.70` | YOLO NMS IoU threshold |
-| `MASK_RCNN_MODEL_PATH` | `output/mask_rcnn/mask_rcnn_state_dict.pt` | 학습된 state dict |
-| `MASK_RCNN_METADATA_PATH` | `output/mask_rcnn/model_metadata.json` | architecture/class mapping metadata |
-| `VISION_DEVICE` | `auto` | `auto`, `cuda`, `cpu` |
-| `MASK_SCORE_THRESHOLD` | `0.70` | instance confidence threshold |
-| `MASK_BINARY_THRESHOLD` | `0.50` | mask probability threshold |
-| `MASK_OVERLAY_ALPHA` | `0.45` | mask 투명도 |
-| `EXPECTED_WASHER_COUNT` | `2` | 정상 조립에 필요한 와셔 개수 |
-| `REFERENCE_HEAD_CM` | `1.0` | 볼트 머리의 축 방향 기준 길이(cm) |
-| `REFERENCE_NUT_CM` | `1.0` | 너트 역할 볼트의 축 방향 기준 길이(cm) |
-| `REFERENCE_WASHER_CM` | `0.3` | 와셔의 축 방향 기준 길이(cm) |
-| `FULL_THREAD_CM` | `2.0` | 완전 체결 시 나사산 노출 길이(cm) |
-| `TIGHTNESS_MIN_RATIO` | `1.08` | 체결 정상 판정에 사용하는 나사산 길이 비율 |
-| `EVENT_SAMPLE_FPS` | `1.0` | Vision FPS와 독립적인 defect event 평가 빈도 |
-| `DEFECT_GEOMETRY_TOLERANCE_RATIO` | `0.05` | 정규화 geometry를 동일 상태로 보는 허용 오차 시작값 |
-| `NORMAL_RESET_FRAMES` | `5` | 이전 signature를 지우기 위한 sampled NORMAL 횟수 |
-| `PERSISTENCE_QUEUE_SIZE` | `10` | Vision과 DB I/O를 분리하는 확정 이벤트 queue 크기 |
-| `PERSISTENCE_RETRY_SECONDS` | `2` | DB/파일 저장 실패 시 재시도 간격 |
-| `ALLOW_MOCK_FALLBACK` | `false` | 모델 load 실패 시 mock을 허용할지 여부. 운영에서는 `false` 권장 |
-| `DEFECT_STORAGE_DIR` | `backend/storage/defects` | defect evidence 이미지 경로 |
-| `DATABASE_AUTO_CREATE` | 환경별 설정 | 개발용 schema 자동 생성 여부 |
-| `START_BACKGROUND_WORKERS` | `true` | camera/vision worker 시작 여부 |
-
-Camera FPS, Vision FPS, Event sampling FPS, Stream FPS는 독립적입니다. 30 FPS 카메라와 10 FPS vision을 사용해도 DB event 평가는 기본 1 FPS로 수행합니다.
-
-U-Net은 semantic segmentation 모델이므로 같은 class의 부품이 mask에서 서로 붙으면 하나의 연결 영역으로 해석됩니다. 와셔처럼 동일 class instance의 개수 판정이 중요할 때는 라벨 경계를 분리하고, 학습 결과에서도 부품 사이 배경 경계가 유지되는지 검증해야 합니다.
-
-## REST API
-
-| Method | Path | 목적 |
-| --- | --- | --- |
-| `GET` | `/api/v1/stream` | MJPEG processed-frame stream |
-| `GET` | `/api/v1/inspection/latest` | VisionWorker의 최신 메모리 검사 결과 |
-| `GET` | `/api/v1/inspections?page=0&size=20` | 검사 이력 |
-| `GET` | `/api/v1/inspections/{id}` | 검사 상세 |
-| `GET` | `/api/v1/inspections/{id}/image` | 저장된 evidence image |
-| `GET` | `/api/v1/system/status` | camera/worker/database 상태 |
-| `GET` | `/stream-test` | 최소 MJPEG 브라우저 테스트 페이지 |
-
-## 테스트
-
-```powershell
-.\.venv\Scripts\python -m pytest -q
-```
-
-단위 테스트는 실제 카메라 없이 camera lifecycle, frame buffer, Vision Worker의 JPEG buffer 갱신, event manager 중복 방지, DB 장애 격리, U-Net component 추출, 판정 로직, 증거 이미지 저장과 MJPEG endpoint를 검증합니다. 실제 모델 smoke test는 학습 이미지 한 장으로 load, inference, visualization, JPEG encoding을 확인합니다.
-
-## 현재 범위 밖
-
-- 제품 추적 또는 PLC 연동
-- WebRTC/H.264, SSE, WebSocket
-- MES/ERP/재고/권한/생산계획 기능
-
-
